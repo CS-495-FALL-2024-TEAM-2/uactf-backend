@@ -1,8 +1,8 @@
-- name: Push generated webpage to another repository
-  uses: nkoppel/push-files-to-another-repository@v1.1.3
-  env:
+name: Push generated webpage to another repository
+uses: nkoppel/push-files-to-another-repository@v1.1.3
+env:
     API_TOKEN_GITHUB: '${{ secrets.API_TOKEN_GITHUB }}'
-  with:
+with:
     source-files: src/
     destination-username: RediatBrook
     destination-repository: RediatBrook/uactf-backend-deploy
