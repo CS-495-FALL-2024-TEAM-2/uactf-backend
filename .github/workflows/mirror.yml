@@ -1,21 +1,10 @@
-name: Copy Commit
-
-on: push
-
-jobs:
-  copy-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Copy Commit
-        uses: jeffreyc/copy-commit-to-another-repo@v1.0.0
+      - name: Push generated webpage to another repository
+        uses: nkoppel/push-files-to-another-repository@v1.1.3
         env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          include: ''
-          exclude: ''
-          destination: 'RediatBrook/uactf-backend-deploy'
-          branch: 'main'
+          source-files: 'src/'
+          destination-username: 'RediatBrook'
+          destination-repository: 'RediatBrook/uactf-backend-deploy'
+          destination-directory: './'
+          commit-email: 'rediatbrook@gmail.com'
