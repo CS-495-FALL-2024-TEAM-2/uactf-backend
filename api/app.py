@@ -27,7 +27,7 @@ def get_main_route() -> Response:
 @app.route("/testdb")
 def ping_to_test() -> Response:
     if uri is None:
-        return {"content" : "Failed to Ping Database Successfully."}, 503
+        return jsonify({"content" : "Failed to Ping Database Successfully."}), 503
     try:
         client: MongoClient = MongoClient(uri, server_api=ServerApi('1'))
         client.admin.command('ping')
