@@ -20,3 +20,24 @@ class CreateChallengeRequest(BaseModel):
     solution_explanation: str
     hints: Optional[List[Hint]] = None
 
+class ListChallengeResponse(BaseModel):
+    challenge_name: str
+    challenge_category: str
+    points: int
+    challenge_description: str
+    challenge_id: str
+    division: List[int]
+
+class GetChallengeResponse(BaseModel):
+	challenge_name: str
+	points: int
+	creator_name: str
+	division: List[int]
+	challenge_description: str
+	flag: str
+	is_flag_case_sensitive: bool
+	challenge_category: str
+	solution_explanation: str
+	hints: Optional[List[Hint]] = None
+
+
