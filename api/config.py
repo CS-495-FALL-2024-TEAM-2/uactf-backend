@@ -9,6 +9,7 @@ class Config:
     DB_PASSWORD = os.environ.get("DB_PASSWORD")
     DB_NAME = "crimsondefense_ctf"
     DB_CHALLENGES_COLLECTION = "challenges"
+    CLIENT_ORIGIN = os.environ.get("CLIENT_ORIGIN")
 
 
 class DevConfig(Config):

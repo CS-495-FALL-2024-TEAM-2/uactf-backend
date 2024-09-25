@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, Response, request
+import os
 from config import config
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -17,7 +18,7 @@ def create_app(config_name="dev"):
     app.config.from_object(config[config_name])
 
     # Enable CORS
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
     app.config['CORS_HEADERS'] = 'Content-Type'
 
     # Check if testing
