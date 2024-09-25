@@ -19,7 +19,7 @@ This is the backend for the UA CTF (Capture The Flag) application. It's built us
    ```
    cd api
    ```
-   
+
    You have two options for setting up the environment variables:
 
    a. Copy the `.env` file provided in the Slack channel into the `api` folder.
@@ -32,15 +32,17 @@ This is the backend for the UA CTF (Capture The Flag) application. It's built us
    ```
    export DB_USERNAME=your_username
    export DB_PASSWORD=your_password
+   export CLIENT_ORIGIN=client_origin
    ```
 
    For Windows:
    ```
    set DB_USERNAME=your_username
    set DB_PASSWORD=your_password
+   set CLIENT_ORIGIN=client_origin
    ```
 
-   Replace `your_username` and `your_password` with your MongoDB Atlas credentials.
+   Replace `your_username` and `your_password` with your MongoDB Atlas credentials. Replace `client_origin` with the origin of your client.
 
 ## Running the Application
 
