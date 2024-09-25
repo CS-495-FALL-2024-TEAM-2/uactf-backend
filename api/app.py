@@ -11,6 +11,7 @@ from pydantic import ValidationError
 import http_status_codes as status
 from bson.objectid import ObjectId
 from models import CreateChallengeRequest, ListChallengeResponse, GetChallengeResponse
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -37,6 +38,7 @@ else:
 
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 def get_main_route() -> Tuple[Response, int]:
