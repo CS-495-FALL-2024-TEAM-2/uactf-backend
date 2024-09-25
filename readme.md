@@ -64,6 +64,16 @@ By default, this will start the server on `http://127.0.0.1:5000/`.
    - Creates a new challenge.
    - Requires a JSON body with challenge details.
 
+4. **GET /challenges/get**
+   - Gets all challenges in the database.
+   - You can provide an optional parameter year to get all the challenges from that year. I.e. /challenges/get?=year
+
+5. **GET /challenges/details**
+   - Requires a parameter challenge_id to get the details for a challenge
+   - Note: This endpoint will likely be updated to accept only post requests with authentication information required as part of the request
+   - Returns all the challenges from that given year
+
+
 ## File Structure
 
 - `app.py`: Main application file containing the Flask routes and database connection logic.
