@@ -6,7 +6,7 @@ import logging
 from typing import Dict, Optional, Tuple
 from dotenv import load_dotenv
 import http_status_codes as status
-
+from flask_cors import CORS, cross_origin
 
 load_dotenv()
 
@@ -15,6 +15,10 @@ def create_app(config_name="dev"):
     app = Flask(__name__)
     app.app_context().push()
     app.config.from_object(config[config_name])
+
+    # Enable CORS
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+    app.config['CORS_HEADERS'] = 'Content-Type'
 
     # Check if testing
     if app.config['TESTING']:
