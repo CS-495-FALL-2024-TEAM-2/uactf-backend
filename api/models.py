@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime
 
 class Hint(BaseModel):
     hint: str
@@ -11,7 +10,6 @@ class CreateChallengeRequest(BaseModel):
     points: int
     creator_name: str
     division: List[int]
-    created_at: datetime
     challenge_description: str
     flag: str
     is_flag_case_sensitive: bool
