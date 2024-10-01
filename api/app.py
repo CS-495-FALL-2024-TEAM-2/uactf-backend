@@ -4,10 +4,11 @@ from config import config
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 from dotenv import load_dotenv
 import http_status_codes as status
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
+from middleware import Middleware
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ def create_app(config_name="dev"):
     app = Flask(__name__)
     app.app_context().push()
     app.config.from_object(config[config_name])
+    app.wsgi_app = Middleware(app.wsgi_app)
 
     # Enable CORS
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
@@ -66,8 +68,10 @@ def create_app(config_name="dev"):
 
     # Register routes here
     from routes.challenges import challenges_blueprint
+    from routes.refresh import refresh_blueprint
 
     app.register_blueprint(challenges_blueprint)
+    app.register_blueprint(refresh_blueprint)
 
     return app
 
