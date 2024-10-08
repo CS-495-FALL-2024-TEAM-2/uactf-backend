@@ -1,0 +1,38 @@
+import datetime
+import os
+import jwt
+
+secret_key = os.getenv("SECRET_KEY")
+auth_algorithm = os.getenv("AUTH_ALGORITHM")
+
+def generate_access_token(userId):
+    try:
+        access_token = jwt.encode(
+            {
+                "userId": userId,
+                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15),
+                "iat": datetime.datetime.now(datetime.timezone.utc),
+            },
+            secret_key,
+            auth_algorithm
+        )
+        return access_token
+    except Exception as e:
+        return e
+
+def generate_tokens(userId, role):
+    try:
+        access_token = generate_access_token(userId)
+        refresh_token = jwt.encode(
+            {
+                "userId": userId,
+                "role": role,
+                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7),
+                "iat": datetime.datetime.now(datetime.timezone.utc),
+            },
+            secret_key,
+            auth_algorithm
+        )
+        return access_token, refresh_token
+    except Exception as e:
+        return e

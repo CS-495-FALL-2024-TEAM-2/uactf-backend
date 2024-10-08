@@ -1,3 +1,4 @@
+from enum import Enum
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -38,4 +39,18 @@ class GetChallengeResponse(BaseModel):
 	solution_explanation: str
 	hints: Optional[List[Hint]] = None
 
+class UserRole(str, Enum):
+    admin = "admin"
+    crimsonDefense = "crimsonDefense"
+    teacher = "teacher"
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class CreateNewUser(BaseModel):
+    competition_id: str
+    email: str
+    username: str
+    password: str
+    role: UserRole
