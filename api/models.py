@@ -38,4 +38,12 @@ class GetChallengeResponse(BaseModel):
 	solution_explanation: str
 	hints: Optional[List[Hint]] = None
 
+class CreateTeacherRequest(BaseModel):
+    first_name: str
+    last_name: str
+    school_name: str
+    school_address: str
+    shirt_size: str
+    email: Optional[str]
+
 
