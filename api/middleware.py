@@ -5,6 +5,8 @@ public_paths = [
     "/",
     "/testdb",
     "/auth/login",
+    "/accounts/teachers/create",
+    "/accounts/teachers/verify"
 ]
 
 class Middleware:
@@ -38,10 +40,10 @@ class Middleware:
             response = Response("Internal Server Error", status=500)
             return response(environ, start_response)
 
-    def is_token_valid(token):
+    def is_token_valid(self, token):
         # TODO: Implement this function
         return True
 
-    def refresh_access_token(refresh_token):
+    def refresh_access_token(self, refresh_token):
         # TODO: Implement this function
         return None

@@ -3,3 +3,4 @@ pymongo
 pydantic
 python-dotenv
 pytest-flask
+bcrypt

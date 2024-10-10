@@ -69,9 +69,11 @@ def create_app(config_name="dev"):
     # Register routes here
     from routes.challenges import challenges_blueprint
     from routes.refresh import refresh_blueprint
+    from routes.accounts import accounts_blueprint
 
     app.register_blueprint(challenges_blueprint)
     app.register_blueprint(refresh_blueprint)
+    app.register_blueprint(accounts_blueprint)
 
     return app
 
