@@ -8,6 +8,7 @@ from typing import Dict, Tuple
 from pydantic import ValidationError
 from models import CreateTeacherRequest
 import http_status_codes as status
+from bson.objectid import ObjectId
 import bcrypt
 
 #TODO: Remove routes being public and Modify to work with middleware once it is complete
@@ -84,7 +85,12 @@ def create_teacher_account() -> Tuple[Response, int]:
         client[db_name][db_teacher_info_collection].insert_one(teacher_info_dict)
 
         # Return success response
-        return jsonify({"content": "Created account successfully!"}), status.CREATED
+        return jsonify({
+            "content": "Created account successfully!",
+            "role":"teacher",
+            "first_name": teacher_first_name,
+            "last_name": teacher_last_name
+            }), status.CREATED
 
     except ValidationError as e:
         logging.error(f"Validation error: {e}")
@@ -111,12 +117,18 @@ def verify_teacher_account() -> Tuple[Response, int]:
         if not teacher_account:
             return jsonify({"content": "Teacher account not found"}), status.NOT_FOUND
 
+        teacher_info = client[db_name][db_teacher_info_collection].find_one({"account_id":ObjectId(teacher_account["_id"])})
+
         # Get the stored bcrypt-hashed password
         stored_hashed_password = teacher_account["password"]
-
         # Verify the provided password using bcrypt
         if bcrypt_verify_password(provided_password, stored_hashed_password):
-            return jsonify({"content": "Verification successful!"}), status.OK
+            return jsonify({
+                "content": "Verification successful!",
+                "role": teacher_account["role"],
+                "first_name": teacher_info["first_name"],
+                "last_name": teacher_info["last_name"]
+                }), status.OK
         else:
             return jsonify({"content": "Incorrect username or password"}), status.UNAUTHORIZED
 
