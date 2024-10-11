@@ -16,7 +16,7 @@ auth_blueprint = Blueprint("auth", __name__)
 client = current_app.client
 uri = current_app.uri
 db_name = current_app.config['DB_NAME']
-db_users_collection = current_app.config['DB_USERS_COLLECTION']
+db_accounts_collection = current_app.config['DB_ACCOUNTS_COLLECTION']
 
 @auth_blueprint.route('/auth/login', methods=['POST'])
 def login() -> Tuple[Response, int]:
@@ -25,7 +25,7 @@ def login() -> Tuple[Response, int]:
         login_dict: Dict = login_request.model_dump()
 
         db = client[db_name]
-        user = db[db_users_collection].find_one({"email": login_dict['email']})
+        user = db[db_accounts_collection].find_one({"email": login_dict['email']})
         
         if not user or not check_password_hash(user['password'], login_dict['password']):
             return jsonify({"error": "Invalid email or password"}), status.UNAUTHORIZED
@@ -67,7 +67,7 @@ def register() -> Tuple[Response, int]:
         create_user_dict['password'] = generate_password_hash(create_user_dict['password'], method='pbkdf2:sha256', salt_length=16)
         
         db = client[db_name]
-        collection = db[db_users_collection]
+        collection = db[db_accounts_collection]
         response = collection.insert_one(create_user_dict)
         if response.inserted_id is not None:
             return jsonify({"message": "User registered successfully"}), status.CREATED

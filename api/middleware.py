@@ -13,7 +13,8 @@ public_paths = [
     "/",
     "/testdb",
     "/auth/login",
-    "/auth/register",
+    "/accounts/teachers/create",
+    "/accounts/teachers/verify"
 ]
 
 class Middleware:
@@ -47,7 +48,7 @@ class Middleware:
             response = Response("Internal Server Error", status=500)
             return response(environ, start_response)
 
-    def is_token_valid(token):
+    def is_token_valid(self, token):
         try:
             decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm])
             
@@ -64,7 +65,7 @@ class Middleware:
             logging.error("Invalid token.")
             return False
 
-    def refresh_access_token(refresh_token):
+    def refresh_access_token(self, refresh_token):
         try:
             decoded_refresh_token = jwt.decode(refresh_token, secret_key, algorithms=[auth_algorithm])
             userId = decoded_refresh_token["userId"]

@@ -54,3 +54,13 @@ class CreateNewUser(BaseModel):
     username: str
     password: str
     role: UserRole
+    
+class CreateTeacherRequest(BaseModel):
+    first_name: str
+    last_name: str
+    school_name: str
+    school_address: str
+    shirt_size: str
+    email: Optional[str]
+
+

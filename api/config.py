@@ -9,7 +9,10 @@ class Config:
     DB_PASSWORD = os.environ.get("DB_PASSWORD")
     DB_NAME = "crimsondefense_ctf"
     DB_CHALLENGES_COLLECTION = "challenges"
-    DB_USERS_COLLECTION = "users"
+    DB_ACCOUNTS_COLLECTION = "accounts"
+    DB_STUDENT_INFO_COLLECTION = "student_info"
+    DB_TEACHER_INFO_COLLECTION = "teacher_info"
+    DB_STUDENT_ACCOUNTS_COLLECTION = "student_accounts"
     CLIENT_ORIGIN = os.environ.get("CLIENT_ORIGIN")
 
 
