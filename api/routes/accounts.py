@@ -135,4 +135,3 @@ def verify_teacher_account() -> Tuple[Response, int]:
     except Exception as e:
         logging.error(f"Unexpected error during verification: {e}")
         return jsonify({"content": "Error during verification"}), status.INTERNAL_SERVER_ERROR
-
