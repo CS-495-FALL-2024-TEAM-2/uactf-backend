@@ -48,13 +48,20 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
-class CreateNewUser(BaseModel):
+class CreateCrimsonDefenseRequest(BaseModel):
     competition_id: str
     email: str
     username: str
     password: str
     role: UserRole
-    
+
+class CreateAdminRequest(BaseModel):
+    competition_id: str
+    email: str
+    username: str
+    password: str
+    role: UserRole
+
 class CreateTeacherRequest(BaseModel):
     first_name: str
     last_name: str

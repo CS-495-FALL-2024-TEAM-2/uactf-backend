@@ -2,11 +2,10 @@ import logging
 import os
 from tokens import generate_tokens
 from flask import Blueprint, Response, current_app, request, jsonify
-from werkzeug.security import check_password_hash, generate_password_hash
 from pydantic import ValidationError
 from typing import Dict, Tuple
 import http_status_codes as status
-from models import LoginRequest, CreateNewUser
+from models import LoginRequest
 from pymongo.errors import WriteError, OperationFailure
 from accounts import bcrypt_verify_password
 
@@ -58,34 +57,3 @@ def login() -> Tuple[Response, int]:
         logging.error("Encountered exception: %s", e)
 
     return jsonify({"error": "Error logging in the user."}), status.INTERNAL_SERVER_ERROR
-
-@auth_blueprint.route('/auth/register', methods=["POST"])
-def register() -> Tuple[Response, int]:
-    try:
-        create_user_request: CreateNewUser = CreateNewUser.model_validate_json(request.data)
-        create_user_dict: Dict = create_user_request.model_dump()
-        
-        create_user_dict['password'] = generate_password_hash(create_user_dict['password'], method='pbkdf2:sha256', salt_length=16)
-        
-        db = client[db_name]
-        collection = db[db_accounts_collection]
-        response = collection.insert_one(create_user_dict)
-        if response.inserted_id is not None:
-            return jsonify({"message": "User registered successfully"}), status.CREATED
-        else:
-            return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
-    except ValidationError as e:
-        return jsonify({'error': str(e)}), status.BAD_REQUEST
-
-    except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while writing to the database.'}), status.INTERNAL_SERVER_ERROR
-
-    except OperationFailure as e:
-        logging.error("OperationFailure: %s", e)
-        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
-
-    except Exception as e:
-        logging.error("Encountered exception: %s", e)
-
-    return jsonify({"error": "Error creating user."}), status.INTERNAL_SERVER_ERROR

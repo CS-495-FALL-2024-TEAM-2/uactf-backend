@@ -13,8 +13,10 @@ public_paths = [
     "/",
     "/testdb",
     "/auth/login",
+    "/accounts/teachers/verify",
+    "/accounts/admin/create",
+    "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
-    "/accounts/teachers/verify"
 ]
 
 class Middleware:
