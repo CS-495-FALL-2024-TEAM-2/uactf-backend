@@ -41,7 +41,7 @@ class GetChallengeResponse(BaseModel):
 
 class UserRole(str, Enum):
     admin = "admin"
-    crimsonDefense = "crimsonDefense"
+    crimsonDefense = "crimson_defense"
     teacher = "teacher"
 
 class LoginRequest(BaseModel):
