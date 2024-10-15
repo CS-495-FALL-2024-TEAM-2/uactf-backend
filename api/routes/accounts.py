@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Blueprint, current_app, jsonify, request, Response
 from typing import Dict, Tuple
 from pydantic import ValidationError
-from models import CreateTeacherRequest
+from models import CreateAdminRequest, CreateCrimsonDefenseRequest, CreateTeacherRequest
 import http_status_codes as status
 from bson.objectid import ObjectId
 import bcrypt
@@ -37,6 +37,7 @@ def bcrypt_hash_password(password: str) -> str:
 def bcrypt_verify_password(provided_password: str, stored_hashed_password: str) -> bool:
     return bcrypt.checkpw(provided_password.encode('utf-8'), stored_hashed_password.encode('utf-8'))
 
+# TEACHER ACCOUNTS --------------------------------------------------------------
 @accounts_blueprint.route('/accounts/teachers/create', methods=["POST"])
 def create_teacher_account() -> Tuple[Response, int]:
     try:
@@ -136,3 +137,98 @@ def verify_teacher_account() -> Tuple[Response, int]:
         logging.error(f"Unexpected error during verification: {e}")
         return jsonify({"content": "Error during verification"}), status.INTERNAL_SERVER_ERROR
 
+# CRIMSON DEFENSE ACCOUNTS ----------------------------------------------------
+@accounts_blueprint.route('/accounts/crimson_defense/create', methods=["POST"])
+def create_crimson_defense_account() -> Tuple[Response, int]:
+    try:
+        # Validate and parse the incoming request data
+        create_crimson_defense_acc_request: CreateCrimsonDefenseRequest = CreateCrimsonDefenseRequest.model_validate_json(request.data)
+        create_crimson_defense_acc_dict: Dict = create_crimson_defense_acc_request.model_dump()
+        create_crimson_defense_acc_dict['created_at'] = datetime.now()
+
+        # Extract necessary information from the request data
+        crimson_defense_email = create_crimson_defense_acc_dict["email"]  # Assuming the email is passed in the request
+
+        # Generate password and salt, then hash the password
+        password = generate_password()
+        hashed_password = bcrypt_hash_password(password)
+
+        # Log the unsalted password for testing purposes
+        logging.info(f"Generated unsalted password for testing: {password}")
+
+        # Prepare account dictionary
+        crimson_defense_account_dict = {
+            "competition_id": None,  # Assuming the competition ID is not provided in this route
+            "email": crimson_defense_email,
+            "password": hashed_password,  # Store the salted and hashed password
+            "role": "crimson_defense",
+        }
+
+        # Insert the account into the Accounts collection and get the new account's ID
+        response = client[db_name][db_accounts_collection].insert_one(crimson_defense_account_dict)
+
+        if response.inserted_id is None:
+            return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
+
+        # Return success response
+        return jsonify({
+            "content": "Created account successfully!",
+            "role": "crimson_defense",
+            "email": crimson_defense_email,
+            }), status.CREATED
+
+    except ValidationError as e:
+        logging.error(f"Validation error: {e}")
+        return jsonify({"content": "Request does not have all parameters required or adhere to the schema."}), status.BAD_REQUEST
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"content": "Error creating account"}), status.INTERNAL_SERVER_ERROR
+
+# SUPER ADMIN ACCOUNTS ----------------------------------------------------
+@accounts_blueprint.route('/accounts/admin/create', methods=["POST"])
+def create_admin_account() -> Tuple[Response, int]:
+    try:
+        # Validate and parse the incoming request data
+        create_admin_request: CreateAdminRequest = CreateAdminRequest.model_validate_json(request.data)
+        create_admin_dict: Dict = create_admin_request.model_dump()
+        create_admin_dict['created_at'] = datetime.now()
+
+        # Extract necessary information from the request data
+        admin_email = create_admin_dict["email"]  # Assuming the email is passed in the request
+
+        # Generate password and salt, then hash the password
+        password = generate_password()
+        hashed_password = bcrypt_hash_password(password)
+
+        # Log the unsalted password for testing purposes
+        logging.info(f"Generated unsalted password for testing: {password}")
+
+        # Prepare account dictionary
+        admin_dict = {
+            "competition_id": None,  # Assuming the competition ID is not provided in this route
+            "email": admin_email,
+            "password": hashed_password,  # Store the salted and hashed password
+            "role": "admin",
+        }
+
+        # Insert the account into the Accounts collection and get the new account's ID
+        response = client[db_name][db_accounts_collection].insert_one(admin_dict)
+
+        if response.inserted_id is None:
+            return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
+
+        # Return success response
+        return jsonify({
+            "content": "Created account successfully!",
+            "role": "admin",
+            "email": admin_email,
+            }), status.CREATED
+
+    except ValidationError as e:
+        logging.error(f"Validation error: {e}")
+        return jsonify({"content": "Request does not have all parameters required or adhere to the schema."}), status.BAD_REQUEST
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"content": "Error creating account"}), status.INTERNAL_SERVER_ERROR

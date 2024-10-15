@@ -1,12 +1,22 @@
+import os
 from werkzeug.wrappers import Request, Response, ResponseStream
 import logging
+import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from models import UserRole
+from tokens import generate_access_token
+
+secret_key = os.getenv("SECRET_KEY")
+auth_algorithm = os.getenv("AUTH_ALGORITHM")
 
 public_paths = [
     "/",
     "/testdb",
     "/auth/login",
+    "/accounts/teachers/verify",
+    "/accounts/admin/create",
+    "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
-    "/accounts/teachers/verify"
 ]
 
 class Middleware:
@@ -41,9 +51,31 @@ class Middleware:
             return response(environ, start_response)
 
     def is_token_valid(self, token):
-        # TODO: Implement this function
-        return True
+        try:
+            decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm])
+            
+            user_role = decoded_token.get("role", UserRole.teacher)
+            if user_role not in UserRole:
+                logging.error("Role is invalid or not recognized.")
+                return False
+
+            return True
+        except ExpiredSignatureError:
+            logging.error("Token has expired.")
+            return False
+        except InvalidTokenError:
+            logging.error("Invalid token.")
+            return False
 
     def refresh_access_token(self, refresh_token):
-        # TODO: Implement this function
-        return None
+        try:
+            decoded_refresh_token = jwt.decode(refresh_token, secret_key, algorithms=[auth_algorithm])
+            userId = decoded_refresh_token["userId"]
+
+            new_access_token = generate_access_token(userId)
+            
+            return new_access_token
+        except InvalidTokenError:
+            logging.error("Invalid refresh token.")
+            return None
+        
