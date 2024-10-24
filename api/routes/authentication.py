@@ -7,7 +7,7 @@ from typing import Dict, Tuple
 import http_status_codes as status
 from models import LoginRequest
 from pymongo.errors import WriteError, OperationFailure
-from accounts import bcrypt_verify_password
+from passwords import bcrypt_verify_password
 
 secret_key = os.getenv("SECRET_KEY")
 auth_algorithm = os.getenv("AUTH_ALGORITHM")
@@ -27,7 +27,7 @@ def login() -> Tuple[Response, int]:
         db = client[db_name]
         user = db[db_accounts_collection].find_one({"email": login_dict['email']})
         
-        if not user or not bcrypt_verify_password(user['password'], login_dict['password']):
+        if not user or not bcrypt_verify_password(login_dict["password"], user['password']):
             return jsonify({"error": "Invalid email or password"}), status.UNAUTHORIZED
 
         access_token, refresh_token = generate_tokens(str(user['_id']), user['role'])
