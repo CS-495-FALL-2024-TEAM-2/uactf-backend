@@ -68,6 +68,6 @@ class CreateTeacherRequest(BaseModel):
     school_name: str
     school_address: str
     shirt_size: str
-    email: Optional[str]
+    email: str
 
 
