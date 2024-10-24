@@ -7,7 +7,7 @@ from typing import Dict, Tuple
 import http_status_codes as status
 from models import LoginRequest
 from pymongo.errors import WriteError, OperationFailure
-from accounts import bcrypt_verify_password
+from passwords import bcrypt_verify_password
 
 secret_key = os.getenv("SECRET_KEY")
 auth_algorithm = os.getenv("AUTH_ALGORITHM")
