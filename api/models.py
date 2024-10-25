@@ -51,7 +51,6 @@ class LoginRequest(BaseModel):
 class CreateCrimsonDefenseRequest(BaseModel):
     competition_id: str
     email: str
-    username: str
     password: str
     role: UserRole
 
@@ -66,8 +65,6 @@ class CreateTeacherRequest(BaseModel):
     first_name: str
     last_name: str
     school_name: str
-    school_address: str
     shirt_size: str
+    contact_number: str
     email: str
-
-
