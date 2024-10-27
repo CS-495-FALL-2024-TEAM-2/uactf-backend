@@ -61,10 +61,8 @@ class CreateTeacherRequest(BaseModel):
     first_name: str
     last_name: str
     school_name: str
-    school_address: str
     contact_number: str
     shirt_size: str
-    contact_number: str
     email: str
 
 class CreateCompetitionRequest(BaseModel):
