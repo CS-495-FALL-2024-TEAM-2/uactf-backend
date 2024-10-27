@@ -13,6 +13,7 @@ class Config:
     DB_STUDENT_INFO_COLLECTION = "student_info"
     DB_TEACHER_INFO_COLLECTION = "teacher_info"
     DB_STUDENT_ACCOUNTS_COLLECTION = "student_accounts"
+    DB_COMPETITION_COLLECTION = "competitions"
     CLIENT_ORIGIN = os.environ.get("CLIENT_ORIGIN")
 
 
