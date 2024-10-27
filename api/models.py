@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel
 from typing import Optional, List
@@ -49,22 +50,29 @@ class LoginRequest(BaseModel):
     password: str
 
 class CreateCrimsonDefenseRequest(BaseModel):
-    competition_id: str
     email: str
     password: str
     role: UserRole
 
 class CreateAdminRequest(BaseModel):
-    competition_id: str
     email: str
-    username: str
-    password: str
-    role: UserRole
 
 class CreateTeacherRequest(BaseModel):
     first_name: str
     last_name: str
     school_name: str
+    school_address: str
+    contact_number: str
     shirt_size: str
     contact_number: str
     email: str
+
+class CreateCompetitionRequest(BaseModel):
+    competition_name: str
+    registration_deadline: datetime
+    is_active: bool
+
+class getCompetitionResponse(BaseModel):
+    competition_name: str
+    registration_deadline: datetime
+    is_active: bool
