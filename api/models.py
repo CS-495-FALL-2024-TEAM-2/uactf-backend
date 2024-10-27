@@ -51,6 +51,8 @@ class LoginRequest(BaseModel):
 
 class CreateCrimsonDefenseRequest(BaseModel):
     email: str
+    password: str
+    role: UserRole
 
 class CreateAdminRequest(BaseModel):
     email: str
@@ -59,7 +61,6 @@ class CreateTeacherRequest(BaseModel):
     first_name: str
     last_name: str
     school_name: str
-    school_address: str
     contact_number: str
     shirt_size: str
     email: str

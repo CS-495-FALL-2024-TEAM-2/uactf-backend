@@ -65,17 +65,18 @@ def create_teacher_account() -> Tuple[Response, int]:
             "last_name": teacher_last_name,
             "created_at": create_teacher_dict['created_at'],
             "school_name": create_teacher_dict["school_name"],
-            "school_address": create_teacher_dict["school_address"],
+            "contact_number": create_teacher_dict["contact_number"],
             "shirt_size": create_teacher_dict["shirt_size"],
         }
 
         # Insert the teacher info into the TeacherInfo collection
         client[db_name][db_teacher_info_collection].insert_one(teacher_info_dict)
 
-        
+
         # Return success response
         return jsonify({
             "content": "Created account successfully!",
+            "id": str(account_id),
             "role":"teacher",
             "first_name": teacher_first_name,
             "last_name": teacher_last_name
@@ -107,7 +108,7 @@ def verify_teacher_account() -> Tuple[Response, int]:
             return jsonify({"content": "Teacher account not found"}), status.NOT_FOUND
 
         teacher_info = client[db_name][db_teacher_info_collection].find_one({"account_id":ObjectId(teacher_account["_id"])})
-    
+
         if teacher_info is None:
             return jsonify({"content": "Could not find teacher in the database."}), status.NOT_FOUND
 
