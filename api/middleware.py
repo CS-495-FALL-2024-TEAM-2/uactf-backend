@@ -17,6 +17,10 @@ public_paths = [
     "/accounts/admin/create",
     "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
+    "/competitions/create",
+    "/competitions/get",
+    "/competitions/get/current",
+    "/competitions/update/*"
 ]
 
 class Middleware:
@@ -27,7 +31,7 @@ class Middleware:
         try:
             request = Request(environ)
 
-            if request.path in public_paths:
+            if any(request.path.startswith(path.replace('*', '')) for path in public_paths):
                 return self.app(environ, start_response)
 
             access_token = request.cookies.get("access_token")
