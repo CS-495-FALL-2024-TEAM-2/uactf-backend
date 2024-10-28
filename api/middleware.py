@@ -26,7 +26,7 @@ protected_paths = {
     "/challenges/create": ["crimson_defense", "admin"],
     "/competitions/create": ["admin"],
     "/competitions/update/*": ["admin"],
-    "/challenges/get": ["teacher"],  # Teachers can view challenges
+    "/challenges/get": ["admin"],  # Teachers can view challenges
     "/competitions/get/current": ["teacher"],  # Teachers can view current competitions
 }
 

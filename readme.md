@@ -84,7 +84,7 @@ All role-protected routes require a valid `access_token` cookie. Tokens are obta
 | `/challenges/create`         | POST   | `admin`, `crimson_defense` | Creates a new challenge with required details specified in JSON.            |
 | `/challenges/get`            | GET    | `teacher`          | Retrieves a list of challenges.                                             |
 | `/competitions/create`       | POST   | `admin`            | Creates a new competition with details such as name, deadline, and status.  |
-| `/competitions/get`          | GET    | Public             | Retrieves all competitions.                                                 |
+| `/competitions/get`          | GET    | `admin`             | Retrieves all competitions.                                                 |
 | `/competitions/get/current`  | GET    | `teacher`          | Retrieves currently active competitions.                                    |
 | `/competitions/update/<id>`  | POST   | `admin`            | Updates a competition (e.g., change active status) by ID.                   |
 
