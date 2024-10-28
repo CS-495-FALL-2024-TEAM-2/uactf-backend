@@ -14,7 +14,6 @@ public_paths = [
     "/testdb",
     "/auth/login",
     "/accounts/teachers/verify",
-    "/accounts/admin/create",
     "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
     "/competitions/get",
@@ -22,6 +21,7 @@ public_paths = [
 ]
 
 protected_paths = {
+    "/accounts/admin/create": ["admin"],
     "/challenges/create": ["crimson_defense", "admin"],
     "/competitions/create": ["admin"],
     "/competitions/update/*": ["admin"],

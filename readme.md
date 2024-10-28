@@ -224,6 +224,7 @@ A Non-exhaustive list of endpoints:
 
 11. **POST /accounts/admin/create**  
     - Creates an admin account.
+    - Need to be logged in an admin
     - Requires a JSON body with admin details, including email.
 
 12. **POST /competitions/create**  
