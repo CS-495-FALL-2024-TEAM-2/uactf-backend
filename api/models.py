@@ -51,8 +51,6 @@ class LoginRequest(BaseModel):
 
 class CreateCrimsonDefenseRequest(BaseModel):
     email: str
-    password: str
-    role: UserRole
 
 class CreateAdminRequest(BaseModel):
     email: str

@@ -8,6 +8,7 @@ import http_status_codes as status
 from models import LoginRequest
 from pymongo.errors import WriteError, OperationFailure
 from passwords import bcrypt_verify_password
+from middleware import is_token_valid, decode_token
 
 secret_key = os.getenv("SECRET_KEY")
 auth_algorithm = os.getenv("AUTH_ALGORITHM")
@@ -57,3 +58,21 @@ def login() -> Tuple[Response, int]:
         logging.error("Encountered exception: %s", e)
 
     return jsonify({"error": "Error logging in the user."}), status.INTERNAL_SERVER_ERROR
+
+@auth_blueprint.route('/auth/role', methods=['GET'])
+def get_role()-> Tuple[Response, int]:
+    if request.method != "GET":
+        return jsonify({'error': 'Method is not supported.'}), status.METHOD_NOT_ALLOWED
+
+    access_token = request.cookies.get("access_token")
+    if not is_token_valid(access_token):
+        return jsonify({'error':'The Access Token provided is invalid.'}), status.BAD_REQUEST
+
+    decoded_token = decode_token(access_token)
+    role = decoded_token.get('role', None)
+
+    if role == None:
+        return jsonify({'error': 'Error getting role'}), status.INTERNAL_SERVER_ERROR
+
+    return jsonify({'role':role}), status.OK
+
