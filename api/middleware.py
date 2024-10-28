@@ -21,14 +21,13 @@ public_paths = [
     "/competitions/get/current"
 ]
 
-# Define role-based permissions for protected paths
 protected_paths = {
     "/challenges/create": ["crimson_defense", "admin"],
     "/competitions/create": ["admin"],
     "/competitions/update/*": ["admin"],
-    "/challenges/get": ["admin"],  # Teachers can view challenges
-    "/competitions/get/current": ["teacher"],  # Teachers can view current competitions
-}
+    "/challenges/get": ["admin"], 
+    "/competitions/get/current": ["teacher"],
+    }
 
 
 class Middleware:
@@ -71,7 +70,7 @@ class Middleware:
 
                     return self.app(environ, start_response)
 
-            # General token check if the path does not require specific roles but still needs authentication
+            # General token check if the path does not require specific roles but still needs authentication. For endpoints that only requre login.
             if not access_token or not is_token_valid(access_token):
                 # Check if refresh token is valid, otherwise return Unauthorized
                 if not refresh_token or not is_token_valid(refresh_token):
