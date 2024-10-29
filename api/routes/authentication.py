@@ -36,7 +36,8 @@ def login() -> Tuple[Response, int]:
         response = jsonify({
             "message": "Logged in successfully",
             "access_token": access_token,
-            "refresh_token": refresh_token
+            "refresh_token": refresh_token,
+            "role": user['role']
         })
         response.set_cookie("access_token", access_token, httponly=True)
         response.set_cookie("refresh_token", refresh_token, httponly=True)
