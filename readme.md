@@ -46,7 +46,6 @@ This is the backend for the UA CTF (Capture The Flag) application. It's built us
 
    To generate the secret key you can run:
     ```
-   set DB_USERNAME=your_username
    import secrets
    secret_key = secrets.token_urlsafe(64)
    print(secret_key)
