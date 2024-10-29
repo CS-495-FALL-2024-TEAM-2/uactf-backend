@@ -27,20 +27,25 @@ def login() -> Tuple[Response, int]:
 
         db = client[db_name]
         user = db[db_accounts_collection].find_one({"email": login_dict['email']})
-        
+
         if not user or not bcrypt_verify_password(login_dict["password"], user['password']):
             return jsonify({"error": "Invalid email or password"}), status.UNAUTHORIZED
 
-        access_token, refresh_token = generate_tokens(str(user['_id']), user['role'])
-        
+        try:
+            access_token, refresh_token = generate_tokens(str(user['_id']), user['role'])
+        except Exception as e:
+            logging.error("Error generating tokens: %s", e)
+            return jsonify({"error": "Error generating tokens"}), status.INTERNAL_SERVER_ERROR
+
         response = jsonify({
             "message": "Logged in successfully",
             "access_token": access_token,
             "refresh_token": refresh_token,
             "role": user['role']
         })
-        response.set_cookie("access_token", access_token, httponly=True)
-        response.set_cookie("refresh_token", refresh_token, httponly=True)
+        print('Setting cookies', access_token, refresh_token)
+        response.set_cookie("access_token", value=access_token, httponly=True, domain='localhost', samesite='None', path='/', secure=True)
+        response.set_cookie("refresh_token", value=refresh_token, httponly=True, domain='localhost', samesite='None', path='/', secure=True)
 
         return response, status.OK
     except ValidationError as e:
@@ -76,4 +81,3 @@ def get_role()-> Tuple[Response, int]:
         return jsonify({'error': 'Error getting role'}), status.INTERNAL_SERVER_ERROR
 
     return jsonify({'role':role}), status.OK
-
