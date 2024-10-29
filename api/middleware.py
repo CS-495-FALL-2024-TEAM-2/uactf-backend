@@ -51,6 +51,8 @@ class Middleware:
             access_token = request.cookies.get("access_token")
             refresh_token = request.cookies.get("refresh_token")
 
+            print(access_token, refresh_token)
+
             # Check if the path requires specific role authorization
             for protected_path, allowed_roles in protected_paths.items():
                 if path_matches(protected_path, request.path):
