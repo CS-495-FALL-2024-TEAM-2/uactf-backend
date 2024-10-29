@@ -60,12 +60,10 @@ def login() -> Tuple[Response, int]:
 
     return jsonify({"error": "Error logging in the user."}), status.INTERNAL_SERVER_ERROR
 
-@auth_blueprint.route('/auth/role', methods=['GET'])
+@auth_blueprint.route('/auth/role', methods=['POST'])
 def get_role()-> Tuple[Response, int]:
-    if request.method != "GET":
-        return jsonify({'error': 'Method is not supported.'}), status.METHOD_NOT_ALLOWED
-
-    access_token = request.cookies.get("access_token")
+  
+    access_token = request.values.get("access_token")
     if not is_token_valid(access_token):
         return jsonify({'error':'The Access Token provided is invalid.'}), status.BAD_REQUEST
 

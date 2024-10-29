@@ -48,9 +48,8 @@ class Middleware:
             if any(path_matches(path, request.path) for path in public_paths):
                 return self.app(environ, start_response)
 
-            access_token = request.cookies.get("access_token")
-            refresh_token = request.cookies.get("refresh_token")
-
+            access_token = request.values.get("access_token")
+            refresh_token = request.values.get("refresh_token")
             # Check if the path requires specific role authorization
             for protected_path, allowed_roles in protected_paths.items():
                 if path_matches(protected_path, request.path):
