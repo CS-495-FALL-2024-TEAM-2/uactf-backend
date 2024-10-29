@@ -126,14 +126,6 @@ Used in the `/competitions/create` endpoint.
 }
 ```
 
-#### `Update Competition`
-Used in the `/competitions/update/<id>` endpoint.
-
-```json
-{
-  "is_active": true
-}
-```
 
 ### Example Usage
 
