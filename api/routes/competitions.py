@@ -6,7 +6,7 @@ from datetime import date, datetime
 from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
-from models import CreateCompetitionRequest, getCompetitionResponse
+from models import CreateCompetitionRequest, GetCompetitionResponse
 
 competitions_blueprint = Blueprint("competitions", __name__)
 
@@ -58,8 +58,19 @@ def get_competitions() -> Tuple[Response, int]:
         db = client[db_name]
         collection = db[db_competitions_collection]
 
-        competitions = [str(document["_id"]) for document in collection.find()]
+        competitions = []
 
+        for document in collection.find():
+                competition = {
+                    "competition_id": str(document["_id"]),
+                    "competition_name": document["competition_name"],
+                    "created_at": document["created_at"],
+                    "registration_deadline": document["registration_deadline"],
+                    "is_active": document["is_active"]
+                }
+                validated_competition: GetCompetitionResponse = GetCompetitionResponse.model_validate(competition)
+                competition_dict = validated_competition.model_dump()
+                competitions.append(competition_dict)
         return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
 
     except WriteError as e:
@@ -83,9 +94,21 @@ def get_current_competitions() -> Tuple[Response, int]:
         collection = db[db_competitions_collection]
 
         today = datetime.now()
-        query = {"registration_deadline": {"$lt": today}, "is_active": True}
+        query = {"registration_deadline": {"$gt": today}, "is_active": True}
 
-        competitions = [str(document["_id"]) for document in collection.find(query)]
+        competitions = []
+
+        for document in collection.find(query):
+                competition = {
+                    "competition_id": str(document["_id"]),
+                    "competition_name": document["competition_name"],
+                    "created_at": document["created_at"],
+                    "registration_deadline": document["registration_deadline"],
+                    "is_active": document["is_active"]
+                }
+                validated_competition: GetCompetitionResponse = GetCompetitionResponse.model_validate(competition)
+                competition_dict = validated_competition.model_dump()
+                competitions.append(competition_dict)
         
         return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
 
@@ -122,13 +145,14 @@ def get_competition_details():
             return jsonify({"error":"Could not find any competition with that competition_id"}), status.BAD_REQUEST
 
         competition = {
+            "competition_id": str(document["_id"]),
             "competition_name": document["competition_name"],
             "created_at": document["created_at"],
             "registration_deadline": document["registration_deadline"],
             "is_active": document["is_active"]
         }
 
-        validated_competition: getCompetitionResponse = getCompetitionResponse.model_validate(competition)
+        validated_competition: GetCompetitionResponse = GetCompetitionResponse.model_validate(competition)
         competition_dict = validated_competition.model_dump()
 
         return jsonify({"content": "Successfully fetched competition details.", "competition": competition_dict}), status.OK

@@ -68,7 +68,8 @@ class CreateCompetitionRequest(BaseModel):
     registration_deadline: datetime
     is_active: bool
 
-class getCompetitionResponse(BaseModel):
+class GetCompetitionResponse(BaseModel):
+    competition_id: str
     competition_name: str
     registration_deadline: datetime
     is_active: bool
