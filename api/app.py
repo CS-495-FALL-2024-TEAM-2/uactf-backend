@@ -20,7 +20,12 @@ def create_app(config_name="dev"):
     app.wsgi_app = Middleware(app.wsgi_app)
 
     # Enable CORS
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
+    CORS(app, supports_credentials=True,
+        methods=['GET', 'POST', 'OPTIONS'],
+        allow_headers=['Content-Type', '*'],
+        expose_headers=["Set-Cookie", "Access-Control-Allow-Credentials"],
+        resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
+
     app.config['CORS_HEADERS'] = 'Content-Type'
 
     # Check if testing
@@ -65,6 +70,8 @@ def create_app(config_name="dev"):
             logging.error("Encountered exception: %s", e)
 
         return jsonify({"error": "Error pinging database."}), status.INTERNAL_SERVER_ERROR
+
+
 
     # Register routes here
     from routes.challenges import challenges_blueprint
