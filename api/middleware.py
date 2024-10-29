@@ -16,7 +16,8 @@ public_paths = [
     "/accounts/teachers/verify",
     "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
-    "/competitions/get/current"
+    "/competitions/get/current",
+    "/auth/role"
 ]
 
 protected_paths = {
