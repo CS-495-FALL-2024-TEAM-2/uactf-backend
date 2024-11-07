@@ -21,9 +21,9 @@ def create_app(config_name="dev"):
 
     # Enable CORS
     CORS(app, supports_credentials=True,
-        # methods=['GET', 'POST', 'OPTIONS'],
-        # allow_headers=['Content-Type', '*'],
-        # expose_headers=["Set-Cookie", "Access-Control-Allow-Credentials"],
+        methods=['GET', 'POST', 'OPTIONS'],
+        allow_headers=['Content-Type', '*'],
+        expose_headers=["Set-Cookie", "Access-Control-Allow-Credentials"],
         resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
 
     app.config['CORS_HEADERS'] = 'Content-Type'

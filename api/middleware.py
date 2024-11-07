@@ -45,13 +45,12 @@ class Middleware:
             request = Request(environ)
 
             # Allow requests to public paths without authentication
-            if any(path_matches(path, request.path) for path in public_paths):
+            if any(path_matches(path, request.path) for path in public_paths) or request.method == "OPTIONS":
                 return self.app(environ, start_response)
 
             access_token = request.cookies.get("access_token")
             refresh_token = request.cookies.get("refresh_token")
 
-            print(access_token, refresh_token)
 
             # Check if the path requires specific role authorization
             for protected_path, allowed_roles in protected_paths.items():
@@ -68,6 +67,8 @@ class Middleware:
                     # Decode the token to get user role
                     token_data = decode_token(access_token)
                     user_role = token_data.get("role")
+
+                    print("user_role,", user_role)
 
                     # Check if user role is authorized for the requested path
                     if user_role not in allowed_roles:
