@@ -264,5 +264,6 @@ Major dependencies include:
 - PyMongo: MongoDB driver
 - python-dotenv: For loading environment variables
 - Pydantic: For data validation
+- Resend: For securely sending emails
 
 For a complete list of dependencies, refer to the `requirements.txt` file.
