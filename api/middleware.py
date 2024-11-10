@@ -17,7 +17,10 @@ public_paths = [
     "/accounts/crimson_defense/create",
     "/accounts/teachers/create",
     "/competitions/get/current",
-    "/auth/role"
+    "/auth/role",
+    "/teams/create",
+    "/teams/get",
+    "/teachers/get/all"
 ]
 
 protected_paths = {
