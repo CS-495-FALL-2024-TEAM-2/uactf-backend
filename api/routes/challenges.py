@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, Response, request, current_app
+from os import stat
+from flask import Blueprint, json, jsonify, Response, request, current_app
 from typing import Dict, Optional, Tuple
 import http_status_codes as status
 from pymongo.errors import WriteError, OperationFailure
@@ -179,5 +180,52 @@ def get_challenge_details():
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
+        return jsonify({"content": "Error getting challenge details."}), status.INTERNAL_SERVER_ERROR
 
-    return jsonify({"content": "Error getting challenge details."}), status.INTERNAL_SERVER_ERROR
+@challenges_blueprint.route('/challenges/<string:challenge_id>', methods=["PUT","DELETE"])
+def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
+    try:
+        db = client[db_name]
+        collection = db[db_challenges_collection]
+        challenge = collection.find_one({"_id": ObjectId(challenge_id)})
+        if challenge is None:
+            return jsonify({"error":"Could not find any challenge with that challenge_id"}), status.BAD_REQUEST
+
+        if request.method == "DELETE":
+            delete_attempt = collection.delete_one({"_id": ObjectId(challenge_id)})
+
+            if delete_attempt.deleted_count == 1:
+                return jsonify({"content": "Deleted challenge successfully!"}), status.OK
+
+            else:
+                return jsonify({"error": "Failed to delete challenge"}), status.INTERNAL_SERVER_ERROR
+
+        if request.method == "PUT":
+            update_challenge_request: CreateChallengeRequest = CreateChallengeRequest.model_validate_json(request.data)
+            update_data: Dict = update_challenge_request.model_dump()
+            update_attempt = collection.update_one(
+                    {"_id": ObjectId(challenge_id)},
+                    {"$set": update_data}
+                    )
+
+            if update_attempt.modified_count == 1:
+                return jsonify({"content": "Successfully updated challenge!"}), status.OK
+            else:
+                return jsonify({"error": "Failed to delete challenge"}), status.INTERNAL_SERVER_ERROR
+        else:
+            return jsonify({"error": "Endpoint does not support this method"}), status.NOT_IMPLEMENTED
+
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), status.BAD_REQUEST
+
+    except WriteError as e:
+          logging.error("WriteError: %s", e)
+          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+
+    except OperationFailure as e:
+        logging.error("OperationFailure: %s", e)
+        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        logging.error("Encountered exception: %s", e)
+        return jsonify({"error": "Error updating or deleting challenge"}), status.INTERNAL_SERVER_ERROR    
