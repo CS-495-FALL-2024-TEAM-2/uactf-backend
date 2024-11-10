@@ -1,12 +1,14 @@
 import logging
 from datetime import datetime
+from os import stat
 from flask import Blueprint, current_app, jsonify, request, Response
 from typing import Dict, Tuple
 from pydantic import ValidationError
-from models import CreateAdminRequest, CreateCrimsonDefenseRequest, CreateTeacherRequest
+from models import CreateAdminRequest, CreateCrimsonDefenseRequest, CreateTeacherRequest, EmailRequest
 import http_status_codes as status
 from bson.objectid import ObjectId
 from passwords import generate_password, bcrypt_hash_password, bcrypt_verify_password
+from emails import send_email_to_user
 
 #TODO: Remove routes being public and Modify to work with middleware once it is complete
 
@@ -33,6 +35,9 @@ def create_teacher_account() -> Tuple[Response, int]:
 
         # Extract necessary information from the request data
         teacher_email = create_teacher_dict["email"]  # Assuming the email is passed in the request
+        teacher_first_name: str = create_teacher_dict["first_name"]
+        teacher_last_name: str = create_teacher_dict["last_name"]
+
 
         # Generate password and salt, then hash the password
         password = generate_password()
@@ -41,7 +46,29 @@ def create_teacher_account() -> Tuple[Response, int]:
         # Log the unsalted password for testing purposes
         logging.info(f"Generated unsalted password for testing: {password}")
 
-        # Prepare account dictionary
+        email_request = EmailRequest(
+                email_account=teacher_email,
+                subject="UA CTF Account Details",
+                message=f"""
+        Dear {teacher_first_name} {teacher_last_name},
+
+        Your account has been successfully created. Here are your login credentials:
+
+        Email: {teacher_email}
+        Password: {password}
+
+        For security reasons, please change your password after your first login.
+
+        Best regards,
+        The Team
+                """.strip()
+            )
+        
+        email_attempt_successful = send_email_to_user(email_request)
+        if not email_attempt_successful:
+            logging.error(f"Failed to send welcome email to {teacher_email}")
+            return jsonify({"error": "Could not send email to the teacher"}), status.INTERNAL_SERVER_ERROR
+
         teacher_account_dict = {
             "competition_id": None,  # Assuming the competition ID is not provided in this route
             "email": teacher_email,
@@ -54,9 +81,6 @@ def create_teacher_account() -> Tuple[Response, int]:
 
         if account_id is None:
             return jsonify({"content": "Could not find teacher in the database."}), status.NOT_FOUND
-
-        teacher_first_name: str = create_teacher_dict["first_name"]
-        teacher_last_name: str = create_teacher_dict["last_name"]
 
         # Prepare teacher info dictionary
         teacher_info_dict = {
@@ -162,6 +186,27 @@ def create_crimson_defense_account() -> Tuple[Response, int]:
         if response.inserted_id is None:
             return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
 
+        email_request = EmailRequest(
+            email_account=crimson_defense_email,
+            subject="UA CTF Account Details",
+            message=f"""
+Dear Crimson Defense Member,
+
+Your account has been successfully created. Here are your login credentials:
+Email: {crimson_defense_email}
+Password: {password}
+
+For security reasons, please change your password after your first login.
+
+Best regards,
+The Team
+            """.strip()
+        )
+        
+        email_attempt_successful = send_email_to_user(email_request)
+        if not email_attempt_successful:
+            logging.error(f"Failed to send welcome email to {crimson_defense_email}")
+            return jsonify({"error": "Could not send email to the Crimson Defense member"}), status.INTERNAL_SERVER_ERROR
         # Return success response
         return jsonify({
             "content": "Created account successfully!",
@@ -209,6 +254,28 @@ def create_admin_account() -> Tuple[Response, int]:
 
         if response.inserted_id is None:
             return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
+        
+        email_request = EmailRequest(
+            email_account=admin_email,
+            subject="UA CTF Account Details",
+            message=f"""
+Dear Administrator,
+
+Your account has been successfully created. Here are your login credentials:
+Email: {admin_email}
+Password: {password}
+
+For security reasons, please change your password after your first login.
+
+Best regards,
+The Team
+            """.strip()
+        )
+        
+        email_attempt_successful = send_email_to_user(email_request)
+        if not email_attempt_successful:
+            logging.error(f"Failed to send welcome email to {admin_email}")
+            return jsonify({"error": "Could not send email to the administrator"}), status.INTERNAL_SERVER_ERROR
 
         # Return success response
         return jsonify({

@@ -15,6 +15,8 @@ class Config:
     DB_STUDENT_ACCOUNTS_COLLECTION = "student_accounts"
     DB_COMPETITION_COLLECTION = "competitions"
     CLIENT_ORIGIN = os.environ.get("CLIENT_ORIGIN")
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+    SENDER_EMAIL_ACCOUNT = "UA CTF <no-reply@focuspiece.com>"
 
 
 class DevConfig(Config):
