@@ -6,3 +6,4 @@ pytest-flask
 flask-cors
 PyJWT
 bcrypt
+resend

@@ -73,3 +73,9 @@ class GetCompetitionResponse(BaseModel):
     competition_name: str
     registration_deadline: datetime
     is_active: bool
+
+class EmailRequest(BaseModel):
+    email_account: str
+    subject: str
+    message: str
+
