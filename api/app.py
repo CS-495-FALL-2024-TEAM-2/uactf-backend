@@ -79,12 +79,16 @@ def create_app(config_name="dev"):
     from routes.authentication import auth_blueprint
     from routes.accounts import accounts_blueprint
     from routes.competitions import competitions_blueprint
+    from routes.teachers import teachers_blueprint
+    from routes.teams import teams_blueprint
 
     app.register_blueprint(challenges_blueprint)
     app.register_blueprint(refresh_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(accounts_blueprint)
     app.register_blueprint(competitions_blueprint)
+    app.register_blueprint(teachers_blueprint)
+    app.register_blueprint(teams_blueprint)
 
     return app
 
