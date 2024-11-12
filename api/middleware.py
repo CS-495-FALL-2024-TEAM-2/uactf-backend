@@ -31,6 +31,7 @@ protected_paths = {
     "/challenges/get": ["admin","crimson_defense"],
     "/competitions/get/current": ["teacher"],
     "/competitions/get": ["admin"],
+    "/challenges/<string:challenge_id>" : ["admin", "crimson_defense"], 
 }
 
 def path_matches(pattern, path):

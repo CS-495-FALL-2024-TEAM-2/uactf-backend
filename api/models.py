@@ -76,6 +76,12 @@ class GetCompetitionResponse(BaseModel):
     registration_deadline: datetime
     is_active: bool
 
+class EmailRequest(BaseModel):
+    email_account: str
+    subject: str
+    message: str
+
+
 class CreateTeamRequest(BaseModel):
     teacher_id: str
     competition_id: str
