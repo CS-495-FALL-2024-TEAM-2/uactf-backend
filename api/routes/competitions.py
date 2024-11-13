@@ -74,8 +74,8 @@ def get_competitions() -> Tuple[Response, int]:
         return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -83,8 +83,7 @@ def get_competitions() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
 
 @competitions_blueprint.route('/competitions/get/current')
 def get_current_competitions() -> Tuple[Response, int]:
@@ -109,7 +108,7 @@ def get_current_competitions() -> Tuple[Response, int]:
                 validated_competition: GetCompetitionResponse = GetCompetitionResponse.model_validate(competition)
                 competition_dict = validated_competition.model_dump()
                 competitions.append(competition_dict)
-        
+
         return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
 
     except WriteError as e:
@@ -189,7 +188,7 @@ def update_competition(competition_id) -> Tuple[Response, int]:
                     update_competition_dict['is_active'] = True
                 elif value.lower() in ['false', '0']:
                     update_competition_dict['is_active'] = False
-    
+
         db = client[db_name]
         collection = db[db_competitions_collection]
         response = collection.update_one({"_id": ObjectId(competition_id)}, {"$set": update_competition_dict})
