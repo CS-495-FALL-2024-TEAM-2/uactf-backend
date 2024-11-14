@@ -1,3 +1,4 @@
+import token
 from flask import Blueprint, jsonify, Response, request, current_app
 from typing import Dict, Optional, Tuple
 import http_status_codes as status
@@ -6,9 +7,13 @@ from datetime import date, datetime
 from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
-from models import GetTeamByTeacherResponse, CreateTeamRequest, student_info
+from models import GetTeamByTeacherResponse, CreateTeamRequest, StudentInfo
+import jwt
+import os
 
 teams_blueprint = Blueprint("teams", __name__)
+secret_key = os.getenv("SECRET_KEY")
+auth_algorithm = os.getenv("AUTH_ALGORITHM")
 
 
 client = current_app.client
@@ -24,18 +29,41 @@ def create_competition() -> Tuple[Response, int]:
         create_team_request: CreateTeamRequest = CreateTeamRequest.model_validate_json(request.data)
 
         create_team_dict: Dict = create_team_request.model_dump()
-        create_team_dict['created_at'] = datetime.now()
-        db = client[db_name]
-        collection = db[db_teams_collection]
-        response = collection.insert_one(create_team_dict)
 
-        if response.inserted_id is not None:
-            return jsonify({
-                "content" : "Created team Successfully!",
-                "competition_id": str(response.inserted_id)
-                }),status.CREATED
-        else:
+        db = client[db_name]
+        team_collection = db[db_teams_collection]
+        student_collection = db[db_students_collection]
+
+        team_members = create_team_dict.pop("team_members")
+
+        # Create team in team database collection
+        response = team_collection.insert_one(create_team_dict)
+
+        if response.inserted_id is None:
             return jsonify({"error": "Error adding team to collection"}), status.INTERNAL_SERVER_ERROR
+
+        # Create students in student database collection
+        team_id = response.inserted_id
+        for student in team_members:
+            # TODO: Generate a student account for the student first
+
+            student = {
+                "team_id": team_id,
+                "student_account_id": "test student account id",
+                "first_name": student["first_name"],
+                "last_name": student["last_name"],
+                "shirt_size": student["shirt_size"],
+                "liability_form": "",
+                "is_verified": student["is_verified"],
+            }
+
+            student_response = student_collection.insert_one(student)
+
+            if student_response.inserted_id is None:
+                return jsonify({"error": "Error adding student to collection"}), status.INTERNAL_SERVER_ERROR
+
+
+        return jsonify({"content": "Created team Successfully!", "team_id": str(team_id)}), status.CREATED
 
     except ValidationError as e:
         return jsonify({'error': str(e)}), status.BAD_REQUEST
@@ -55,7 +83,7 @@ def create_competition() -> Tuple[Response, int]:
 
 @teams_blueprint.route('/teams/get')
 def get_teams() -> Tuple[Response, int]:
-    try:        
+    try:
         db = client[db_name]
         team_collection = db[db_teams_collection]
         student_collection = db[db_students_collection]
@@ -63,46 +91,52 @@ def get_teams() -> Tuple[Response, int]:
 
         if 'teacher_id' in request.args:
             teacher_id = request.args['teacher_id']
-        if teacher_id is None:
-            return jsonify({"error": "teacher_id parameter is required."}), status.BAD_REQUEST
 
-        team_document = team_collection.find_one({"_id": ObjectId(teacher_id)})
+        if not teacher_id:
+            # Get id from token in cookies
+            token = request.cookies.get("access_token")
+            decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm]) if token else None
 
-        if team_document is None:
-            return jsonify({"error":"Could not find any team related to that teacher_id"}), status.BAD_REQUEST
-        
-        team = {
-            "competition_id": team_document["competition_id"],
-            "name": team_document["name"],
-            "division": team_document["division"],
-            "is_virtual": team_document["is_virtual"],
-        }
+            if not decoded_token:
+                return jsonify({'error': "Unauthorized "}), status.UNAUTHORIZED
 
-        students = []
-        query = {"teacher_id": teacher_id}
-        for document in student_collection.find(query):
-                student = {
-                    "student_account_id": document[""],
-                    "first_name": document["first_name"],
-                    "last_name": document["last_name"],
-                    "shirt_size": document["shirt_size"],
-                    "liability_form": document["liability_form"],
-                    "upload_date": document["upload_date"],
-                    "is_verified": document["is_verified"],
-                }
-                validated_student: student_info = student_info.model_validate(student)
-                student_dict = validated_student.model_dump()
-                students.append(student_dict)
+            teacher_id = decoded_token["userId"]
 
-        team["students"] = students
-        validated_team: GetTeamByTeacherResponse = GetTeamByTeacherResponse.model_validate(team)
-        team_dict = validated_team.model_dump()
+        teams = []
 
-        return jsonify({"content": "Successfully fetched teams.", "team": team_dict}), status.OK
+        for document in team_collection.find({"teacher_id": teacher_id}):
+            team = {
+                "id": str(document["_id"]),
+                "teacher_id": document["teacher_id"],
+                "competition_id": document["competition_id"],
+                "name": document["name"],
+                "division": document["division"],
+                "is_virtual": document["is_virtual"]
+            }
+
+            students = student_collection.find({"team_id": ObjectId(document["_id"])})
+
+            students_list = [{
+                "id": str(student["_id"]),
+                "student_account_id": student["student_account_id"],
+                "first_name": student["first_name"],
+                "last_name": student["last_name"],
+                "shirt_size": student["shirt_size"],
+                "liability_form": student["liability_form"],
+                "is_verified": student["is_verified"],
+            } for student in students]
+
+            team["students"] = students_list
+
+            validated_team: GetTeamByTeacherResponse = GetTeamByTeacherResponse.model_validate(team)
+            team_dict = validated_team.model_dump()
+            teams.append(team_dict)
+
+        return jsonify({"content": "Successfully fetched teams.", "teams": teams}), status.OK
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -110,5 +144,4 @@ def get_teams() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting team information."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"content": "Error getting team information."}), status.INTERNAL_SERVER_ERROR

@@ -82,38 +82,49 @@ class EmailRequest(BaseModel):
     message: str
 
 
+class CreateStudentRequest(BaseModel):
+    first_name: str
+    last_name: str
+    shirt_size: str
+    is_verified: bool
+
 class CreateTeamRequest(BaseModel):
     teacher_id: str
     competition_id: str
     name: str
-    division: int
+    division: List[int]
     is_virtual: bool
+    team_members: List[CreateStudentRequest]
 
-class teacher_info(BaseModel):
+
+class TeacherInfo(BaseModel):
+    id: str
     account_id: str
     first_name: str
     last_name: str
     school_name: str
-    contact_number: str
-    shirt_size: str
     school_address: str
     school_website: str
+    contact_number: str
+    shirt_size: str
 
-class student_info(BaseModel):
+class StudentInfo(BaseModel):
+    id: str
     student_account_id: str
     first_name: str
     last_name: str
     shirt_size: str
     liability_form: str
-    upload_date: datetime
     is_verified: bool
 
 class GetAllTeachersResponse(BaseModel):
-    teachers: List[teacher_info]
+    teachers: List[TeacherInfo]
 
 class GetTeamByTeacherResponse(BaseModel):
+    id: str
+    teacher_id: str
     competition_id: str
     name: str
-    division: int
+    division: List[int]
     is_virtual: bool
-    students: List[student_info]
+    students: List[StudentInfo]

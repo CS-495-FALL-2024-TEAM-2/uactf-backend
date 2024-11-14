@@ -6,7 +6,7 @@ from datetime import date, datetime
 from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
-from models import GetAllTeachersResponse, teacher_info
+from models import GetAllTeachersResponse, TeacherInfo
 
 teachers_blueprint = Blueprint("teachers", __name__)
 
@@ -17,13 +17,14 @@ db_teachers_collection = current_app.config['DB_TEACHER_INFO_COLLECTION']
 
 @teachers_blueprint.route('/teachers/get/all')
 def get_teams() -> Tuple[Response, int]:
-    try:        
+    try:
         db = client[db_name]
         collection = db[db_teachers_collection]
 
         teachers = []
         for document in collection.find():
                 teacher = {
+                    "id": str(document["_id"]),
                     "account_id": str(document["account_id"]),
                     "first_name": document["first_name"],
                     "last_name": document["last_name"],
@@ -33,8 +34,8 @@ def get_teams() -> Tuple[Response, int]:
                     "school_address": document["school_address"],
                     "school_website": document["school_website"],
                 }
-                
-                validated_teacher: teacher_info = teacher_info.model_validate(teacher)
+
+                validated_teacher: TeacherInfo = TeacherInfo.model_validate(teacher)
                 teacher_dict = validated_teacher.model_dump()
                 teachers.append(teacher_dict)
 

@@ -31,7 +31,7 @@ protected_paths = {
     "/challenges/get": ["admin","crimson_defense"],
     "/competitions/get/current": ["teacher"],
     "/competitions/get": ["admin"],
-    "/challenges/<string:challenge_id>" : ["admin", "crimson_defense"], 
+    "/challenges/<string:challenge_id>" : ["admin", "crimson_defense"],
 }
 
 def path_matches(pattern, path):
@@ -113,7 +113,7 @@ def is_token_valid(token):
     try:
         decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm])
         user_role = decoded_token.get("role", UserRole.teacher)
-        if user_role not in UserRole:
+        if UserRole(user_role) not in UserRole:
             logging.error("Role is invalid or not recognized.")
             return False
         return True
@@ -141,4 +141,3 @@ def decode_token(token):
     except Exception as e:
         logging.error(f"Error decoding token: {e}")
         return None
-
