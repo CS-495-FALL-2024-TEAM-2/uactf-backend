@@ -128,3 +128,6 @@ class GetTeamByTeacherResponse(BaseModel):
     division: List[int]
     is_virtual: bool
     students: List[StudentInfo]
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
