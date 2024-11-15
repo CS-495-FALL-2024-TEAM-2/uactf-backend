@@ -139,3 +139,15 @@ def forgot_password() -> Tuple[Response, int]:
         logging.error("ValidationError: %s", e)
         return jsonify({"error": "Forgot Password Request is not formatted properly."}), status.BAD_REQUEST
 
+    except WriteError as e:
+          logging.error("WriteError: %s", e)
+          return jsonify({'error': 'Experiencing internal server dependency error. Check server logs for details.'}), status.INTERNAL_SERVER_ERROR
+
+    except OperationFailure as e:
+        logging.error("OperationFailure: %s", e)
+        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        logging.error("Encountered exception: %s", e)
+
+
