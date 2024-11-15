@@ -145,3 +145,49 @@ def get_teams() -> Tuple[Response, int]:
     except Exception as e:
         logging.error("Encountered exception: %s", e)
         return jsonify({"content": "Error getting team information."}), status.INTERNAL_SERVER_ERROR
+
+@teams_blueprint.route('/teams/<string:team_id>', method=["POST", "DELETE"])
+def update_or_delete_team(team_id) -> Tuple[Response, int]:
+    try:
+        if not ObjectId.is_valid(team_id):
+            return jsonify({"error": "Invalid competition ID"}), 400
+        
+        db = client[db_name]
+        collection = db[db_teams_collection]
+
+        if request.method == "DELETE":
+            delete_attempt = collection.delete_one({"_id": ObjectId(team_id)})
+
+            if delete_attempt.deleted_count == 1:
+                return jsonify({"content": "Deleted competition successfully!"}), status.OK
+
+            else:
+                return jsonify({"error": "Failed to delete competition"}), status.INTERNAL_SERVER_ERROR
+        elif request.method == "PUT":
+            update_team_id: Dict = request.get_json()
+            response = collection.update_one({"_id": ObjectId(team_id)}, {"$set": update_team_id})
+            if response.matched_count > 0 and response.modified_count > 0:
+                return jsonify({
+                    "content" : "Update team Successfully!",
+                    }),status.CREATED
+            else:
+                return jsonify({"error": "Error updating team in the collection"}), status.INTERNAL_SERVER_ERROR
+        else:
+            return jsonify({"error": "Endpoint does not support this method"}), status.NOT_IMPLEMENTED
+
+    except ValidationError as e:
+        return jsonify({'error': str(e)}), status.BAD_REQUEST
+
+    except WriteError as e:
+          logging.error("WriteError: %s", e)
+          return jsonify({'error': 'An error occurred while writing to the database.'}), status.INTERNAL_SERVER_ERROR
+
+    except OperationFailure as e:
+        logging.error("OperationFailure: %s", e)
+        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        logging.error("Encountered exception: %s", e)
+
+    return jsonify({"error": "Error updating competition."}), status.INTERNAL_SERVER_ERROR
+ 
