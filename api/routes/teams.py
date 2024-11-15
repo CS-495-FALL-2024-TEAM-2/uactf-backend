@@ -146,7 +146,7 @@ def get_teams() -> Tuple[Response, int]:
         logging.error("Encountered exception: %s", e)
         return jsonify({"content": "Error getting team information."}), status.INTERNAL_SERVER_ERROR
 
-@teams_blueprint.route('/teams/<string:team_id>', method=["POST", "DELETE"])
+@teams_blueprint.route('/teams/<string:team_id>', methods=["PUT", "DELETE"])
 def update_or_delete_team(team_id) -> Tuple[Response, int]:
     try:
         if not ObjectId.is_valid(team_id):
@@ -164,12 +164,16 @@ def update_or_delete_team(team_id) -> Tuple[Response, int]:
             else:
                 return jsonify({"error": "Failed to delete competition"}), status.INTERNAL_SERVER_ERROR
         elif request.method == "PUT":
-            update_team_id: Dict = request.get_json()
-            response = collection.update_one({"_id": ObjectId(team_id)}, {"$set": update_team_id})
-            if response.matched_count > 0 and response.modified_count > 0:
+            update_team_request: CreateTeamRequest = CreateTeamRequest.model_validate_json(request.data)
+            update_team_data: Dict = update_team_request.model_dump()
+            update_attempt = collection.update_one(
+                    {"_id": ObjectId(team_id)},
+                    {"$set": update_team_data}
+                    )
+            if update_attempt.matched_count == 1:
                 return jsonify({
                     "content" : "Update team Successfully!",
-                    }),status.CREATED
+                    }),status.OK
             else:
                 return jsonify({"error": "Error updating team in the collection"}), status.INTERNAL_SERVER_ERROR
         else:

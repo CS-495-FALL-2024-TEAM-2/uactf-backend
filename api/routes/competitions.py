@@ -174,7 +174,7 @@ def get_competition_details():
     return jsonify({"content": "Error getting competition details."}), status.INTERNAL_SERVER_ERROR
 
 
-@competitions_blueprint.route('/competitions/<string:competition_id>', methods=["POST", "DELETE"])
+@competitions_blueprint.route('/competitions/<string:competition_id>', methods=["PUT", "DELETE"])
 def update_or_delete_competition(competition_id) -> Tuple[Response, int]:
     try:
         if not ObjectId.is_valid(competition_id):
@@ -193,17 +193,14 @@ def update_or_delete_competition(competition_id) -> Tuple[Response, int]:
                 return jsonify({"error": "Failed to delete competition"}), status.INTERNAL_SERVER_ERROR
 
         elif request.method == "PUT":
-            update_competition_dict: Dict = request.get_json()
-            if "is_active" in update_competition_dict:
-                value = update_competition_dict['is_active']
-                if isinstance(value, str):
-                    if value.lower() in ['true', '1']:
-                        update_competition_dict['is_active'] = True
-                    elif value.lower() in ['false', '0']:
-                        update_competition_dict['is_active'] = False
+            update_competition_request: CreateCompetitionRequest = CreateCompetitionRequest.model_validate_json(request.data)
+            update_competition_data: Dict = update_competition_request.model_dump()
+            update_attempt = collection.update_one(
+                    {"_id": ObjectId(competition_id)},
+                    {"$set": update_competition_data}
+                    )
 
-            response = collection.update_one({"_id": ObjectId(competition_id)}, {"$set": update_competition_dict})
-            if response.matched_count > 0 and response.modified_count > 0:
+            if update_attempt.matched_count == 1:
                 return jsonify({
                     "content" : "Update competition Successfully!",
                     }),status.CREATED
