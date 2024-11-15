@@ -18,6 +18,7 @@ public_paths = [
     "/accounts/teachers/create",
     "/competitions/get/current",
     "/auth/role",
+    "/auth/forgot/password"
     "/teams/create",
     "/teams/get",
     "/teachers/get/all"
@@ -128,7 +129,8 @@ def refresh_access_token(refresh_token):
     try:
         decoded_refresh_token = jwt.decode(refresh_token, secret_key, algorithms=[auth_algorithm])
         userId = decoded_refresh_token["userId"]
-        new_access_token = generate_access_token(userId)
+        role = decoded_refresh_token["role"]
+        new_access_token = generate_access_token(userId, role)
         return new_access_token
     except InvalidTokenError:
         logging.error("Invalid refresh token.")
