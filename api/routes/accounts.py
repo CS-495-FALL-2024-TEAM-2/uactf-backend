@@ -61,8 +61,6 @@ def create_teacher_account() -> Tuple[Response, int]:
         Email: {teacher_email}
         Password: {password}
 
-        For security reasons, please change your password after your first login.
-
         Best regards,
         The Team
                 """.strip()
@@ -203,8 +201,6 @@ Your account has been successfully created. Here are your login credentials:
 Email: {crimson_defense_email}
 Password: {password}
 
-For security reasons, please change your password after your first login.
-
 Best regards,
 The Team
             """.strip()
@@ -276,7 +272,6 @@ Your account has been successfully created. Here are your login credentials:
 Email: {admin_email}
 Password: {password}
 
-For security reasons, please change your password after your first login.
 
 Best regards,
 The Team
