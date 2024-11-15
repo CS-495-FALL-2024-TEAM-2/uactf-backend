@@ -149,5 +149,6 @@ def forgot_password() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
+        return jsonify({"error": "Internal Server Error."}), status.INTERNAL_SERVER_ERROR
 
 
