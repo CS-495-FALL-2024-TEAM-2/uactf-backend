@@ -38,6 +38,10 @@ def create_teacher_account() -> Tuple[Response, int]:
         teacher_first_name: str = create_teacher_dict["first_name"]
         teacher_last_name: str = create_teacher_dict["last_name"]
 
+        email_exists =  client[db_name][db_accounts_collection].find_one({"email":teacher_email})
+        if email_exists:
+            logging.error("The user's email is already in the database.")
+            return jsonify({"error": "Eror Creating Accout. Check Server Logs."}), status.UNAUTHORIZED
 
         # Generate password and salt, then hash the password
         password = generate_password()
@@ -164,7 +168,10 @@ def create_crimson_defense_account() -> Tuple[Response, int]:
 
         # Extract necessary information from the request data
         crimson_defense_email = create_crimson_defense_acc_dict["email"]  # Assuming the email is passed in the request
-
+        email_exists =  client[db_name][db_accounts_collection].find_one({"email":crimson_defense_email})
+        if email_exists:
+            logging.error("The user's email is already in the database.")
+            return jsonify({"error": "Eror Creating Accout. Check Server Logs."}), status.UNAUTHORIZED
         # Generate password and salt, then hash the password
         password = generate_password()
         hashed_password = bcrypt_hash_password(password)
@@ -233,6 +240,10 @@ def create_admin_account() -> Tuple[Response, int]:
 
         # Extract necessary information from the request data
         admin_email = create_admin_dict["email"]  # Assuming the email is passed in the request
+        email_exists =  client[db_name][db_accounts_collection].find_one({"email":admin_email})
+        if email_exists["_id"]:
+            logging.error("The user's email is already in the database.")
+            return jsonify({"error": "Eror Creating Accout. Check Server Logs."}), status.UNAUTHORIZED
 
         # Generate password and salt, then hash the password
         password = generate_password()
