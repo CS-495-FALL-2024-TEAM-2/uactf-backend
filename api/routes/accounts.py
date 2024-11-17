@@ -65,7 +65,7 @@ def create_teacher_account() -> Tuple[Response, int]:
         The Team
                 """.strip()
             )
-        
+
         email_attempt_successful = send_email_to_user(email_request)
         if not email_attempt_successful:
             logging.error(f"Failed to send welcome email to {teacher_email}")
@@ -91,6 +91,8 @@ def create_teacher_account() -> Tuple[Response, int]:
             "last_name": teacher_last_name,
             "created_at": create_teacher_dict['created_at'],
             "school_name": create_teacher_dict["school_name"],
+            "school_address": create_teacher_dict["school_address"],
+            "school_website": create_teacher_dict["school_website"],
             "contact_number": create_teacher_dict["contact_number"],
             "shirt_size": create_teacher_dict["shirt_size"],
         }
@@ -205,7 +207,7 @@ Best regards,
 The Team
             """.strip()
         )
-        
+
         email_attempt_successful = send_email_to_user(email_request)
         if not email_attempt_successful:
             logging.error(f"Failed to send welcome email to {crimson_defense_email}")
@@ -261,7 +263,7 @@ def create_admin_account() -> Tuple[Response, int]:
 
         if response.inserted_id is None:
             return jsonify({"error": "Registration failed"}), status.INTERNAL_SERVER_ERROR
-        
+
         email_request = EmailRequest(
             email_account=admin_email,
             subject="UA CTF Account Details",
@@ -277,7 +279,7 @@ Best regards,
 The Team
             """.strip()
         )
-        
+
         email_attempt_successful = send_email_to_user(email_request)
         if not email_attempt_successful:
             logging.error(f"Failed to send welcome email to {admin_email}")
