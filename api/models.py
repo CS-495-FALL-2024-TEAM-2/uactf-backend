@@ -82,6 +82,12 @@ class EmailRequest(BaseModel):
     subject: str
     message: str
 
+class EmailWithAttachmentRequest(BaseModel):
+    email_account: str
+    subject: str
+    message: str
+    attachment_content: Optional[str] = None
+    attachment_filename: Optional[str] = None
 
 class CreateStudentRequest(BaseModel):
     first_name: str
@@ -132,3 +138,8 @@ class GetTeamByTeacherResponse(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: str
+
+class CreateTeamsReportRequest(BaseModel):
+    is_virtual: bool
+    email: Optional[str] = None
+
