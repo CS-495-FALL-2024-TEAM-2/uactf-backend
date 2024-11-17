@@ -48,8 +48,7 @@ def create_challenge() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"error": "Error creating challenge."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Error creating challenge."}), status.INTERNAL_SERVER_ERROR
 
 
 @challenges_blueprint.route('/challenges/get')
@@ -125,8 +124,7 @@ def get_challenges() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting challenges."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"content": "Error getting challenges."}), status.INTERNAL_SERVER_ERROR
 
 
 @challenges_blueprint.route('/challenges/details')
@@ -171,8 +169,8 @@ def get_challenge_details():
         return jsonify({'error': 'challenge_id provided was not a string'}), status.INTERNAL_SERVER_ERROR
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -219,8 +217,8 @@ def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
         return jsonify({"error": str(e)}), status.BAD_REQUEST
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -228,4 +226,4 @@ def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-        return jsonify({"error": "Error updating or deleting challenge"}), status.INTERNAL_SERVER_ERROR    
+        return jsonify({"error": "Error updating or deleting challenge"}), status.INTERNAL_SERVER_ERROR

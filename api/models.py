@@ -86,11 +86,10 @@ class CreateStudentRequest(BaseModel):
     first_name: str
     last_name: str
     shirt_size: str
-    is_verified: bool
+    email: Optional[str] = None
 
 class CreateTeamRequest(BaseModel):
-    teacher_id: str
-    competition_id: str
+    teacher_id: Optional[str] = None
     name: str
     division: List[int]
     is_virtual: bool
@@ -113,14 +112,15 @@ class StudentInfo(BaseModel):
     student_account_id: str
     first_name: str
     last_name: str
+    email: Optional[str] = None
     shirt_size: str
-    liability_form: str
+    liability_form_id: Optional[str] = None
     is_verified: bool
 
 class GetAllTeachersResponse(BaseModel):
     teachers: List[TeacherInfo]
 
-class GetTeamByTeacherResponse(BaseModel):
+class GetTeamResponse(BaseModel):
     id: str
     teacher_id: str
     competition_id: str
