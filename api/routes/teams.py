@@ -21,6 +21,7 @@ uri = current_app.uri
 db_name = current_app.config['DB_NAME']
 db_teams_collection = current_app.config['DB_TEAMS_COLLECTION']
 db_students_collection = current_app.config['DB_STUDENT_INFO_COLLECTION']
+db_competitions_collection = current_app.config['DB_COMPETITION_COLLECTION']
 
 
 @teams_blueprint.route('/teams/create', methods=["POST"])
@@ -33,6 +34,14 @@ def create_competition() -> Tuple[Response, int]:
         db = client[db_name]
         team_collection = db[db_teams_collection]
         student_collection = db[db_students_collection]
+        competition_collection = db[db_competitions_collection]
+
+        active_competition = competition_collection.find_one({"is_active": True})
+        if active_competition:
+            active_competition_id = str(active_competition["_id"])
+            create_team_dict["competition_id"] = active_competition_id
+        else:
+            return jsonify({"error": "No competition active at this time."}), status.BAD_REQUEST
 
         team_members = create_team_dict.pop("team_members")
 

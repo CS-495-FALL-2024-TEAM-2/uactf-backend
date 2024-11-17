@@ -25,6 +25,10 @@ def create_competition() -> Tuple[Response, int]:
         create_competition_dict['created_at'] = datetime.now()
         db = client[db_name]
         collection = db[db_competitions_collection]
+
+        if create_competition_dict.get('is_active', False):
+            collection.update_many({"is_active": True}, {"$set": {"is_active": False}})
+
         response = collection.insert_one(create_competition_dict)
 
         if response.inserted_id is not None:
@@ -84,45 +88,6 @@ def get_competitions() -> Tuple[Response, int]:
     except Exception as e:
         logging.error("Encountered exception: %s", e)
         return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
-
-@competitions_blueprint.route('/competitions/get/current')
-def get_current_competitions() -> Tuple[Response, int]:
-    try:
-
-        db = client[db_name]
-        collection = db[db_competitions_collection]
-
-        today = datetime.now()
-        query = {"registration_deadline": {"$gt": today}, "is_active": True}
-
-        competitions = []
-
-        for document in collection.find(query):
-                competition = {
-                    "competition_id": str(document["_id"]),
-                    "competition_name": document["competition_name"],
-                    "created_at": document["created_at"],
-                    "registration_deadline": document["registration_deadline"],
-                    "is_active": document["is_active"]
-                }
-                validated_competition: GetCompetitionResponse = GetCompetitionResponse.model_validate(competition)
-                competition_dict = validated_competition.model_dump()
-                competitions.append(competition_dict)
-
-        return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
-
-    except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
-
-    except OperationFailure as e:
-        logging.error("OperationFailure: %s", e)
-        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
-
-    except Exception as e:
-        logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
 
 @competitions_blueprint.route('/competitions/details')
 def get_competition_details():
@@ -195,6 +160,10 @@ def update_or_delete_competition(competition_id) -> Tuple[Response, int]:
         elif request.method == "PUT":
             update_competition_request: CreateCompetitionRequest = CreateCompetitionRequest.model_validate_json(request.data)
             update_competition_data: Dict = update_competition_request.model_dump()
+            
+            if update_competition_data.get('is_active', False):
+                collection.update_many({"is_active": True}, {"$set": {"is_active": False}})
+
             update_attempt = collection.update_one(
                     {"_id": ObjectId(competition_id)},
                     {"$set": update_competition_data}
