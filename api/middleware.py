@@ -18,20 +18,21 @@ public_paths = [
     "/accounts/teachers/create",
     "/competitions/get/current",
     "/auth/role",
-    "/teams/create",
-    "/teams/get",
-    "/teachers/get/all"
 ]
 
 protected_paths = {
     "/accounts/admin/create": ["admin"],
     "/challenges/create": ["crimson_defense", "admin"],
     "/competitions/create": ["admin"],
-    "/competitions/update/*": ["admin"],
+    "/competitions/<string:competition_id>": ["admin"],
     "/challenges/get": ["admin","crimson_defense"],
     "/competitions/get/current": ["teacher"],
     "/competitions/get": ["admin"],
     "/challenges/<string:challenge_id>" : ["admin", "crimson_defense"],
+    "/teams/create": ["teacher", "admin"],
+    "/teams/get": ["admin", "teacher"],
+    "/teachers/get/all": ["admin"],
+    "/teams/<string:team_id>": ["admin", "teacher"],
 }
 
 def path_matches(pattern, path):
