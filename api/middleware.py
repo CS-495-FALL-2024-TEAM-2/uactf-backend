@@ -33,6 +33,7 @@ protected_paths = {
     "/competitions/get/current": ["teacher"],
     "/competitions/get": ["admin"],
     "/challenges/<string:challenge_id>" : ["admin", "crimson_defense"],
+    "/reports/teams/virtual/create": ["admin"],
 }
 
 def path_matches(pattern, path):
@@ -69,7 +70,7 @@ class Middleware:
                         response = Response("Unauthorized: Invalid or expired access token.", status=401)
                         return response(environ, start_response)
 
-                    # Decode the token to get user role
+                    # Decode the to:ken to get user role
                     token_data = decode_token(access_token)
                     user_role = token_data.get("role")
 

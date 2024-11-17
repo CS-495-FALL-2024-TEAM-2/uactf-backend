@@ -62,8 +62,8 @@ class CreateTeacherRequest(BaseModel):
     contact_number: str
     shirt_size: str
     email: str
-    school_address: str
-    school_website: str
+    school_address: Optional[str] = None
+    school_website: Optional[str] = None
 
 class CreateCompetitionRequest(BaseModel):
     competition_name: str
@@ -81,6 +81,12 @@ class EmailRequest(BaseModel):
     subject: str
     message: str
 
+class EmailWithAttachmentRequest(BaseModel):
+    email_account: str
+    subject: str
+    message: str
+    attachment_content: Optional[str] = None
+    attachment_filename: Optional[str] = None
 
 class CreateStudentRequest(BaseModel):
     first_name: str
@@ -103,8 +109,8 @@ class TeacherInfo(BaseModel):
     first_name: str
     last_name: str
     school_name: str
-    school_address: str
-    school_website: str
+    school_address: Optional[str] = None
+    school_website: Optional[str] = None
     contact_number: str
     shirt_size: str
 

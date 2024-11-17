@@ -81,6 +81,7 @@ def create_app(config_name="dev"):
     from routes.competitions import competitions_blueprint
     from routes.teachers import teachers_blueprint
     from routes.teams import teams_blueprint
+    from routes.reports import reports_blueprint
 
     app.register_blueprint(challenges_blueprint)
     app.register_blueprint(refresh_blueprint)
@@ -89,6 +90,7 @@ def create_app(config_name="dev"):
     app.register_blueprint(competitions_blueprint)
     app.register_blueprint(teachers_blueprint)
     app.register_blueprint(teams_blueprint)
+    app.register_blueprint(reports_blueprint)
 
     return app
 
