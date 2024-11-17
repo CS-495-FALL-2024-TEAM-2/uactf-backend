@@ -128,7 +128,7 @@ def refresh_access_token(refresh_token):
     try:
         decoded_refresh_token = jwt.decode(refresh_token, secret_key, algorithms=[auth_algorithm])
         userId = decoded_refresh_token["userId"]
-        new_access_token = generate_access_token(userId)
+        new_access_token = generate_access_token(userId, decoded_refresh_token["role"])
         return new_access_token
     except InvalidTokenError:
         logging.error("Invalid refresh token.")
