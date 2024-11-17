@@ -21,7 +21,7 @@ def create_app(config_name="dev"):
 
     # Enable CORS
     CORS(app, supports_credentials=True,
-        methods=['GET', 'POST', 'OPTIONS'],
+        methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allow_headers=['Content-Type', '*'],
         expose_headers=["Set-Cookie", "Access-Control-Allow-Credentials"],
         resources={r"/*": {"origins": app.config['CLIENT_ORIGIN']}})
@@ -81,6 +81,8 @@ def create_app(config_name="dev"):
     from routes.competitions import competitions_blueprint
     from routes.teachers import teachers_blueprint
     from routes.teams import teams_blueprint
+    from routes.files import files_blueprint
+    from routes.reports import reports_blueprint
 
     app.register_blueprint(challenges_blueprint)
     app.register_blueprint(refresh_blueprint)
@@ -89,6 +91,8 @@ def create_app(config_name="dev"):
     app.register_blueprint(competitions_blueprint)
     app.register_blueprint(teachers_blueprint)
     app.register_blueprint(teams_blueprint)
+    app.register_blueprint(files_blueprint)
+    app.register_blueprint(reports_blueprint)
 
     return app
 

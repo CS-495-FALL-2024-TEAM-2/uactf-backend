@@ -29,16 +29,17 @@ class ListChallengeResponse(BaseModel):
     division: List[int]
 
 class GetChallengeResponse(BaseModel):
-	challenge_name: str
-	points: int
-	creator_name: str
-	division: List[int]
-	challenge_description: str
-	flag: str
-	is_flag_case_sensitive: bool
-	challenge_category: str
-	solution_explanation: str
-	hints: Optional[List[Hint]] = None
+    challenge_name: str
+    points: int
+    creator_name: str
+    division: List[int]
+    challenge_description: str
+    flag: str
+    is_flag_case_sensitive: bool
+    challenge_category: str
+    solution_explanation: str
+    hints: Optional[List[Hint]] = None
+    challenge_file_attachment: Optional[str]
 
 class UserRole(str, Enum):
     admin = "admin"
@@ -81,6 +82,12 @@ class EmailRequest(BaseModel):
     subject: str
     message: str
 
+class EmailWithAttachmentRequest(BaseModel):
+    email_account: str
+    subject: str
+    message: str
+    attachment_content: Optional[str] = None
+    attachment_filename: Optional[str] = None
 
 class CreateStudentRequest(BaseModel):
     first_name: str
@@ -131,3 +138,8 @@ class GetTeamResponse(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: str
+
+class CreateTeamsReportRequest(BaseModel):
+    is_virtual: bool
+    email: Optional[str] = None
+
