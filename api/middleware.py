@@ -18,6 +18,7 @@ public_paths = [
     "/accounts/teachers/create",
     "/competitions/get/current",
     "/auth/role",
+    "/auth/forgot/password"
 ]
 
 protected_paths = {
