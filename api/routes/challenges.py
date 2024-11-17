@@ -1,5 +1,5 @@
 from os import stat
-from flask import Blueprint, json, jsonify, Response, request, current_app
+from flask import Blueprint, json, jsonify, Response, request, current_app, url_for
 from typing import Dict, Optional, Tuple
 import http_status_codes as status
 from pymongo.errors import WriteError, OperationFailure
@@ -8,6 +8,8 @@ from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
 from models import CreateChallengeRequest, ListChallengeResponse, GetChallengeResponse
+import gridfs
+from io import BytesIO
 
 challenges_blueprint = Blueprint("challenges", __name__)
 
@@ -20,11 +22,20 @@ db_challenges_collection = current_app.config['DB_CHALLENGES_COLLECTION']
 @challenges_blueprint.route('/challenges/create', methods=["POST"])
 def create_challenge() -> Tuple[Response, int]:
     try:
-        create_challenge_request: CreateChallengeRequest = CreateChallengeRequest.model_validate_json(request.data)
+        create_challenge_request: CreateChallengeRequest = CreateChallengeRequest.model_validate_json(request.form.get('challenge'))
         create_challenge_dict: Dict = create_challenge_request.model_dump()
         create_challenge_dict['created_at'] = datetime.now()
         db = client[db_name]
         collection = db[db_challenges_collection]
+        challenge_file_attachment_id = None
+        fs = gridfs.GridFS(db)
+       
+        # save file if present
+        if 'challenge_file_attachment' in request.files:
+            file = request.files['challenge_file_attachment']
+            challenge_file_attachment_id = fs.put(file, filename=file.filename)
+
+        create_challenge_dict['challenge_file_attachment_id'] = challenge_file_attachment_id
         response = collection.insert_one(create_challenge_dict)
 
         if response.inserted_id is not None:
@@ -158,7 +169,9 @@ def get_challenge_details():
             "is_flag_case_sensitive": document["is_flag_case_sensitive"],
             "challenge_category": document["challenge_category"],
             "solution_explanation": document["solution_explanation"],
-            "hints": document.get("hints", None)
+            "hints": document.get("hints", None),
+            "challenge_file_attachment": url_for('files.download_file', file_id=document["challenge_file_attachment_id"], _external=True) 
+                if document["challenge_file_attachment_id"] else None,
         }
 
         validated_challenge: GetChallengeResponse = GetChallengeResponse.model_validate(challenge)
@@ -187,11 +200,16 @@ def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
     try:
         db = client[db_name]
         collection = db[db_challenges_collection]
+        fs = gridfs.GridFS(db)
         challenge = collection.find_one({"_id": ObjectId(challenge_id)})
         if challenge is None:
             return jsonify({"error":"Could not find any challenge with that challenge_id"}), status.BAD_REQUEST
 
         if request.method == "DELETE":
+            # if the challenge has a file, delete the file
+            if "challenge_file_attachment_id" in challenge and challenge["challenge_file_attachment_id"] != None:
+                fs.delete(challenge["challenge_file_attachment_id"])
+
             delete_attempt = collection.delete_one({"_id": ObjectId(challenge_id)})
 
             if delete_attempt.deleted_count == 1:
@@ -201,8 +219,21 @@ def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
                 return jsonify({"error": "Failed to delete challenge"}), status.INTERNAL_SERVER_ERROR
 
         if request.method == "PUT":
-            update_challenge_request: CreateChallengeRequest = CreateChallengeRequest.model_validate_json(request.data)
+            update_challenge_request: CreateChallengeRequest = CreateChallengeRequest.model_validate_json(request.form.get('challenge'))
             update_data: Dict = update_challenge_request.model_dump()
+            
+            # delete challenge file
+            if request.form.get("delete_old_challenge_file") == "true":
+                if "challenge_file_attachment_id" in challenge and challenge["challenge_file_attachment_id"] != None:
+                    fs.delete(challenge["challenge_file_attachment_id"])
+                    update_data['challenge_file_attachment_id'] = None
+
+            # update challenge file if new file is present
+            if 'challenge_file_attachment' in request.files:
+                file = request.files['challenge_file_attachment']
+                new_challenge_file_attachment_id = fs.put(file, filename=file.filename)
+                update_data['challenge_file_attachment_id'] = new_challenge_file_attachment_id
+
             update_attempt = collection.update_one(
                     {"_id": ObjectId(challenge_id)},
                     {"$set": update_data}
@@ -211,7 +242,7 @@ def update_or_delete_challenge(challenge_id: str) -> Tuple[Response, int]:
             if update_attempt.modified_count == 1:
                 return jsonify({"content": "Successfully updated challenge!"}), status.OK
             else:
-                return jsonify({"error": "Failed to delete challenge"}), status.INTERNAL_SERVER_ERROR
+                return jsonify({"content": "Warning. No changes were made"}), status.OK
         else:
             return jsonify({"error": "Endpoint does not support this method"}), status.NOT_IMPLEMENTED
 
