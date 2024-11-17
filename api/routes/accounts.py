@@ -89,6 +89,7 @@ def create_teacher_account() -> Tuple[Response, int]:
             "account_id": account_id,
             "first_name": teacher_first_name,
             "last_name": teacher_last_name,
+            "email": teacher_email,
             "created_at": create_teacher_dict['created_at'],
             "school_name": create_teacher_dict["school_name"],
             "school_address": create_teacher_dict["school_address"],
