@@ -152,3 +152,22 @@ def forgot_password() -> Tuple[Response, int]:
         return jsonify({"error": "Internal Server Error."}), status.INTERNAL_SERVER_ERROR
 
 
+
+@auth_blueprint.route('/auth/logout', methods=['POST'])
+def logout() -> Tuple[Response, int]:
+    try:
+        access_token = request.cookies.get('access_token')
+        refresh_token = request.cookies.get('refresh_token')
+
+        if not access_token or not refresh_token:
+            return jsonify({"error": "No active session found"}), status.BAD_REQUEST
+
+        response = jsonify({"message": "Logged out successfully"})
+
+        response.delete_cookie("access_token", domain='localhost', path='/', secure=True, samesite='None')
+        response.delete_cookie("refresh_token", domain='localhost', path='/', secure=True, samesite='None')
+
+        return response, status.OK
+    except Exception as e:
+        logging.error("Encountered exception while logging out: %s", e)
+        return jsonify({"error": "Error logging out the user"}), status.INTERNAL_SERVER_ERROR
