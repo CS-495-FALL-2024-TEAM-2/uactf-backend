@@ -33,6 +33,7 @@ protected_paths = {
     "/teams/get": ["admin", "teacher"],
     "/teachers/get/all": ["admin"],
     "/teams/<string:team_id>": ["admin", "teacher"],
+    "/reports/teams/info/create": ["admin"]
 }
 
 def path_matches(pattern, path):
