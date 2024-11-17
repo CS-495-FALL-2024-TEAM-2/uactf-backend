@@ -45,9 +45,8 @@ def create_teams_report() -> Tuple[Response, int]:
         teachers_collection = db[db_teachers_collection]
         # The admin can pass an email address for the report to be sent to
         # If an email is not part of the request, it is sent to the admins email_account
-        if request.args.get("email")!=None:
-            email_account = request.args.get("email")
-        else:
+        email_account = create_teams_report_dict["email"]
+        if email_account== None:
             token = request.cookies.get("access_token")
             if token:
                 decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm])

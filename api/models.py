@@ -140,3 +140,4 @@ class ForgotPasswordRequest(BaseModel):
 
 class CreateTeamsReportRequest(BaseModel):
     is_virtual: bool
+    email: Optional[str] = None
