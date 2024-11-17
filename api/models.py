@@ -137,3 +137,6 @@ class GetTeamByTeacherResponse(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: str
+
+class CreateTeamsReportRequest(BaseModel):
+    is_virtual: bool

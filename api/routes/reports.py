@@ -5,6 +5,7 @@ from pymongo.errors import WriteError, OperationFailure
 from datetime import datetime
 from pydantic import ValidationError
 from bson.objectid import ObjectId
+from models import CreateTeamsReportRequest
 import logging
 from emails import EmailWithAttachmentRequest, send_email_with_attachment
 import jwt
@@ -27,9 +28,16 @@ db_accounts_collection: str = current_app.config['DB_ACCOUNTS_COLLECTION']
 db_students_collection: str = current_app.config['DB_STUDENT_INFO_COLLECTION']
 db_teachers_collection: str = current_app.config['DB_TEACHER_INFO_COLLECTION']
 
-@reports_blueprint.route('/reports/teams/virtual/create', methods=["POST"])
-def create_virtual_teams_report() -> Tuple[Response, int]:
+@reports_blueprint.route('/reports/teams/create', methods=["POST"])
+def create_teams_report() -> Tuple[Response, int]:
     try:
+        create_teams_report_request: CreateTeamsReportRequest = CreateTeamsReportRequest.model_validate_json(request.data)
+        create_teams_report_dict: Dict = create_teams_report_request.model_dump()
+        report_is_for_virtual_teams = create_teams_report_dict["is_virtual"]
+        if report_is_for_virtual_teams:
+            report_type = "Virtual"
+        else:
+            report_type = "In-Person"
         db = client[db_name]
         team_collection = db[db_teams_collection]
         student_collection = db[db_students_collection]
@@ -56,9 +64,9 @@ def create_virtual_teams_report() -> Tuple[Response, int]:
                 return jsonify({"error": "Error getting admin info from server. Alternatively, try providing your email address directly."}), status.INTERNAL_SERVER_ERROR
             email_account = admin_info["email"]
 
-        virtual_teams = list(team_collection.find({"is_virtual": True}))
-        if not virtual_teams:
-            return jsonify({"error": "Did not find any virtual teams in the database"}), status.INTERNAL_SERVER_ERROR
+        teams_of_type = list(team_collection.find({"is_virtual": report_is_for_virtual_teams}))
+        if not teams_of_type:
+            return jsonify({"error": f"Did not find any {report_type} teams in the database"}), status.INTERNAL_SERVER_ERROR
         
         output = io.StringIO()
         writer = csv.writer(output)
@@ -87,7 +95,7 @@ def create_virtual_teams_report() -> Tuple[Response, int]:
         writer.writerow(headers)
 
         # Process each team
-        for team in virtual_teams:
+        for team in teams_of_type:
             # Get teacher info
             teacher = teachers_collection.find_one({"_id": ObjectId(team["teacher_id"])})
             if not teacher:
@@ -133,17 +141,17 @@ def create_virtual_teams_report() -> Tuple[Response, int]:
 
         email_request = EmailWithAttachmentRequest(
             email_account=email_account,
-            subject="Virtual Teams Report",
+            subject=f"{report_type} Teams Report",
             message=f"""
 Dear Admin,
 
-Attached is the virtual teams report you requested.
+Attached is the {report_type} teams report you requested.
 
 Best regards,
 The Team
             """.strip(),
             attachment_content=base64.b64encode(content.encode()).decode(),
-            attachment_filename="virtual_teams_report.csv"
+            attachment_filename=f"{report_type}_teams_report.csv"
         )
         
         email_sent = send_email_with_attachment(email_request)
@@ -152,7 +160,9 @@ The Team
             return jsonify({'error': 'Failed to send email with report'}), status.INTERNAL_SERVER_ERROR
            
         return jsonify({"content": "Report generated and sent successfully!"}), status.OK
-    
+
+    except ValidationError as e:
+         return jsonify({'error': str(e)}), status.BAD_REQUEST
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
         return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
