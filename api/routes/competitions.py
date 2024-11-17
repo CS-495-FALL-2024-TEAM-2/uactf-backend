@@ -48,8 +48,7 @@ def create_competition() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"error": "Error creating competition."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Error creating competition."}), status.INTERNAL_SERVER_ERROR
 
 @competitions_blueprint.route('/competitions/get')
 def get_competitions() -> Tuple[Response, int]:
@@ -112,8 +111,8 @@ def get_current_competitions() -> Tuple[Response, int]:
         return jsonify({"content": "Successfully fetched competitions.", "competitions": competitions}), status.OK
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -121,8 +120,7 @@ def get_current_competitions() -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"content": "Error getting competitions."}), status.INTERNAL_SERVER_ERROR
 
 @competitions_blueprint.route('/competitions/details')
 def get_competition_details():
@@ -170,8 +168,7 @@ def get_competition_details():
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"content": "Error getting competition details."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"content": "Error getting competition details."}), status.INTERNAL_SERVER_ERROR
 
 
 @competitions_blueprint.route('/competitions/update/<string:competition_id>', methods=["POST"])
@@ -204,8 +201,8 @@ def update_competition(competition_id) -> Tuple[Response, int]:
         return jsonify({'error': str(e)}), status.BAD_REQUEST
 
     except WriteError as e:
-          logging.error("WriteError: %s", e)
-          return jsonify({'error': 'An error occurred while writing to the database.'}), status.INTERNAL_SERVER_ERROR
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while writing to the database.'}), status.INTERNAL_SERVER_ERROR
 
     except OperationFailure as e:
         logging.error("OperationFailure: %s", e)
@@ -213,5 +210,4 @@ def update_competition(competition_id) -> Tuple[Response, int]:
 
     except Exception as e:
         logging.error("Encountered exception: %s", e)
-
-    return jsonify({"error": "Error updating competition."}), status.INTERNAL_SERVER_ERROR
+        return jsonify({"error": "Error updating competition."}), status.INTERNAL_SERVER_ERROR
