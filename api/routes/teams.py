@@ -38,7 +38,7 @@ def create_competition() -> Tuple[Response, int]:
         team_members = create_team_dict.pop("team_members")
 
         # If teacher_id is not provided, get it from the token
-        if not "teacher_id" in create_team_dict:
+        if not create_team_dict["teacher_id"]:
             # Get id from token in cookies
             token = request.cookies.get("access_token")
             decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm]) if token else None
@@ -225,7 +225,7 @@ def get_team_details() -> Tuple[Response, int]:
         return jsonify({"content": "Error getting team information."}), status.INTERNAL_SERVER_ERROR
 
 @teams_blueprint.route('/teams/update/<string:team_id>', methods=["POST"])
-def update_teams(team_id) -> Tuple[Response, int]:
+def update_team(team_id) -> Tuple[Response, int]:
     try:
         if not ObjectId.is_valid(team_id):
             return jsonify({"error": "Invalid team_id"}), status.BAD_REQUEST
@@ -297,3 +297,39 @@ def update_teams(team_id) -> Tuple[Response, int]:
     except Exception as e:
         logging.error("Encountered exception: %s", e)
         return jsonify({"content": "Error updating team information."}), status.INTERNAL_SERVER_ERROR
+
+@teams_blueprint.route('/teams/delete/<string:team_id>', methods=["DELETE"])
+def delete_team(team_id) -> Tuple[Response, int]:
+    try:
+        if not ObjectId.is_valid(team_id):
+            return jsonify({"error": "Invalid team_id"}), status.BAD_REQUEST
+
+        db = client[db_name]
+        team_collection = db[db_teams_collection]
+        student_collection = db[db_students_collection]
+
+        # Delete the team
+        response = team_collection.delete_one({"_id": ObjectId(team_id)})
+
+        if response.deleted_count == 0:
+            return jsonify({"error": "Error deleting team from collection"}), status.INTERNAL_SERVER_ERROR
+
+        # Delete the students of the team
+        response = student_collection.delete_many({"team_id": ObjectId(team_id)})
+
+        if response.deleted_count == 0:
+            return jsonify({"error": "Error deleting students from collection"}), status.INTERNAL_SERVER_ERROR
+
+        return jsonify({"content": "Deleted team successfully!"}), status.OK
+
+    except WriteError as e:
+        logging.error("WriteError: %s", e)
+        return jsonify({'error': 'An error occurred while writing to the database.'}), status.INTERNAL_SERVER_ERROR
+
+    except OperationFailure as e:
+        logging.error("OperationFailure: %s", e)
+        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        logging.error("Encountered exception: %s", e)
+        return jsonify({"content": "Error deleting team information."}), status.INTERNAL_SERVER_ERROR
