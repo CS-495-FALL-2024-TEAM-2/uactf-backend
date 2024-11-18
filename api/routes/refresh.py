@@ -27,7 +27,7 @@ def refresh() -> Tuple[Response, int]:
         new_access_token = jwt.encode(
             {
                 "userId": userId,
-                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=5),
+                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.now(datetime.timezone.utc),
                 "role": decoded_refresh_token["role"],
             },
@@ -37,7 +37,6 @@ def refresh() -> Tuple[Response, int]:
 
         response = jsonify({
             "message": "Token refreshed",
-            "access_token": new_access_token
         })
 
         response.set_cookie("access_token", value=new_access_token, httponly=True, domain='localhost', samesite='None', path='/', secure=True)
