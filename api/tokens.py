@@ -10,7 +10,7 @@ def generate_access_token(userId, role):
         access_token = jwt.encode(
             {
                 "userId": userId,
-                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15),
+                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.now(datetime.timezone.utc),
                 "role": role,
             },
@@ -19,7 +19,7 @@ def generate_access_token(userId, role):
         )
         return access_token
     except Exception as e:
-        return e
+        return None
 
 def generate_tokens(userId, role):
     try:
@@ -36,4 +36,4 @@ def generate_tokens(userId, role):
         )
         return access_token, refresh_token
     except Exception as e:
-        return e
+        return None
