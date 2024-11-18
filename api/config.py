@@ -17,6 +17,7 @@ class Config:
     DB_TEAMS_COLLECTION = "teams"
     DB_TEACHER_INFO_COLLECTION = "teacher_info"
     DB_STUDENT_INFO_COLLECTION = "student_info"
+    DB_TEAM_ACCOUNTS_COLLECTION = "team_accounts"
     CLIENT_ORIGIN = os.environ.get("CLIENT_ORIGIN")
     RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
     SENDER_EMAIL_ACCOUNT = os.environ.get("SENDER_EMAIL_ACCOUNT")
