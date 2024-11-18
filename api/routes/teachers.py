@@ -60,7 +60,7 @@ def get_teams() -> Tuple[Response, int]:
 
 
 @teachers_blueprint.route('/teachers/upload-signed-liability-release-form', methods=["POST"])
-def get_teams() -> Tuple[Response, int]:
+def upload_signed_liability_release_form() -> Tuple[Response, int]:
     try:
         db = client[db_name]
         team_collection = db[db_teams_collection]
