@@ -159,6 +159,10 @@ def get_challenge_details():
         if document is None:
             return jsonify({"error":"Could not find any challenge with that challenge_id"}), status.BAD_REQUEST
 
+        challenge_file_attachment = None
+        if "challenge_file_attachment_id" in document and document["challenge_file_attachment_id"] != None:
+            challenge_file_attachment = url_for('files.download_file', file_id=document["challenge_file_attachment_id"], _external=True)
+
         challenge = {
             "challenge_name": document["challenge_name"],
             "points": document["points"],
@@ -170,8 +174,7 @@ def get_challenge_details():
             "challenge_category": document["challenge_category"],
             "solution_explanation": document["solution_explanation"],
             "hints": document.get("hints", None),
-            "challenge_file_attachment": url_for('files.download_file', file_id=document["challenge_file_attachment_id"], _external=True) 
-                if document["challenge_file_attachment_id"] else None,
+            "challenge_file_attachment": challenge_file_attachment,
         }
 
         validated_challenge: GetChallengeResponse = GetChallengeResponse.model_validate(challenge)
