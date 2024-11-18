@@ -94,16 +94,6 @@ class Middleware:
                     response = Response("Unauthorized", status=401)
                     return response(environ, start_response)
 
-                # Refresh access token using refresh token
-                new_access_token = refresh_access_token(refresh_token)
-                if new_access_token is None:
-                    response = Response("Unauthorized: Invalid refresh token.", status=401)
-                    return response(environ, start_response)
-
-                response = Response()
-                response.set_cookie("access_token", new_access_token, httponly=True)
-                return response(environ, start_response)
-
             # All checks passed, proceed with the request
             return self.app(environ, start_response)
 
@@ -126,16 +116,6 @@ def is_token_valid(token):
     except InvalidTokenError:
         logging.error("Invalid token.")
         return False
-
-def refresh_access_token(refresh_token):
-    try:
-        decoded_refresh_token = jwt.decode(refresh_token, secret_key, algorithms=[auth_algorithm])
-        userId = decoded_refresh_token["userId"]
-        new_access_token = generate_access_token(userId, decoded_refresh_token["role"])
-        return new_access_token
-    except InvalidTokenError:
-        logging.error("Invalid refresh token.")
-        return None
 
 def decode_token(token):
     try:

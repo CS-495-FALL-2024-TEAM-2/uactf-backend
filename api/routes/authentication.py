@@ -74,7 +74,7 @@ def get_role()-> Tuple[Response, int]:
 
     access_token = request.cookies.get("access_token")
     if not is_token_valid(access_token):
-        return jsonify({'error':'The Access Token provided is invalid.'}), status.BAD_REQUEST
+        return jsonify({'error':'The Access Token provided is invalid.'}), status.UNAUTHORIZED
 
     decoded_token = decode_token(access_token)
     role = decoded_token.get('role', None)
@@ -95,7 +95,7 @@ def forgot_password() -> Tuple[Response, int]:
             # Not returning an error to client here for security purposes
             logging.error("Email does not exist.")
             return jsonify({"content": "If this user exists, we have sent you a password reset email."}), status.OK
-        
+
         email_account = existing_user["email"]
         new_password = generate_password()
 
@@ -127,13 +127,13 @@ def forgot_password() -> Tuple[Response, int]:
         The Team
                 """.strip()
             )
-        
+
         email_attempt_successful = send_email_to_user(email_request)
         if not email_attempt_successful:
             logging.error(f"Failed to send welcome email to {email_account}")
             return jsonify({"content": "If this user exists, we have sent you a password reset email."}), status.OK
         logging.info("Successfully reset password and sent to the user!")
-        return jsonify({"content": "If this user exists, we have sent you a password reset email."}), status.OK 
+        return jsonify({"content": "If this user exists, we have sent you a password reset email."}), status.OK
 
     except ValidationError as e:
         logging.error("ValidationError: %s", e)
@@ -150,5 +150,3 @@ def forgot_password() -> Tuple[Response, int]:
     except Exception as e:
         logging.error("Encountered exception: %s", e)
         return jsonify({"error": "Internal Server Error."}), status.INTERNAL_SERVER_ERROR
-
-
