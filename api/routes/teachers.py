@@ -6,14 +6,18 @@ from datetime import date, datetime
 from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
-from models import GetAllTeachersResponse, TeacherInfo
+import gridfs
+from models import GetAllTeachersResponse, TeacherInfo, UploadSignedLiabilityReleaseFormRequest
 
 teachers_blueprint = Blueprint("teachers", __name__)
 
 client = current_app.client
 uri = current_app.uri
 db_name = current_app.config['DB_NAME']
-db_teachers_collection = current_app.config['DB_TEACHER_INFO_COLLECTION']
+db_students_collection: str = current_app.config['DB_STUDENT_INFO_COLLECTION']
+db_teams_collection: str = current_app.config['DB_TEAMS_COLLECTION']
+db_teachers_collection: str = current_app.config['DB_TEACHER_INFO_COLLECTION']
+
 
 @teachers_blueprint.route('/teachers/get/all')
 def get_teams() -> Tuple[Response, int]:
@@ -53,3 +57,69 @@ def get_teams() -> Tuple[Response, int]:
         logging.error("Encountered exception: %s", e)
 
     return jsonify({"content": "Error getting teacher information."}), status.INTERNAL_SERVER_ERROR
+
+
+@teachers_blueprint.route('/teachers/upload-signed-liability-release-form', methods=["POST"])
+def get_teams() -> Tuple[Response, int]:
+    try:
+        db = client[db_name]
+        team_collection = db[db_teams_collection]
+        student_collection = db[db_students_collection]
+        fs = gridfs.GridFS(db)
+
+
+        # check that liability form exists
+        if 'signed_liablity_release_form' not in request.files:
+            return jsonify({"error": "No signed liability release form attached!"}), status.BAD_REQUEST
+        
+        # validation
+        upload_signed_liability_release_form_request: UploadSignedLiabilityReleaseFormRequest = UploadSignedLiabilityReleaseFormRequest.model_validate_json(request.form.get('payload'))
+        # upload_signed_liability_release_form_dict: Dict = upload_signed_liability_release_form_request.model_dump()
+
+
+        student = student_collection.find_one({"_id": ObjectId(upload_signed_liability_release_form_request.student_id)})
+        if student is None:
+            return jsonify({"error":"Could not find student with that id"}), status.BAD_REQUEST
+        
+        team = team_collection.find_one({"_id": ObjectId(student["team_id"])})
+
+        # check if teacher is the teacher for the team the student belongs to
+        if team["teacher_id"] != upload_signed_liability_release_form_request.teacher_id:
+            return jsonify({"error":"Invalid request"}), status.BAD_REQUEST
+
+        if "liability_form_id" in student and student["liability_form_id"] != None:
+            # delete old form
+            fs.delete(student["liability_form_id"])
+
+        # upload new signed form
+        file = request.files['signed_liablity_release_form']
+        new_liability_form_id = fs.put(file, filename=file.filename)
+
+        update_data = {
+            "liability_form_id": new_liability_form_id
+        }
+
+        if student["is_verified"] == True:
+            # if is_verified, change is_verified to false
+            update_data["is_verified"] = False
+        
+        update_attempt = student_collection.update_one(
+            {"_id": ObjectId(student["_id"])},
+            {"$set": update_data}
+            )
+
+        if update_attempt.modified_count == 1:
+            return jsonify({"content": "Successfully uploaded signed form!"}), status.OK
+        
+    except WriteError as e:
+          logging.error("WriteError: %s", e)
+          return jsonify({'error': 'An error occurred while reading from the database.'}), status.INTERNAL_SERVER_ERROR
+
+    except OperationFailure as e:
+        logging.error("OperationFailure: %s", e)
+        return jsonify({'error': 'Database operation failed due to an internal error.'}), status.INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        logging.error("Encountered exception: %s", e)
+
+    return jsonify({"content": "Error uploading signed liability release form"}), status.INTERNAL_SERVER_ERROR
