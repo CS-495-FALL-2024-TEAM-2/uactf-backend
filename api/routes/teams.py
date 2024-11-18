@@ -9,6 +9,8 @@ from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
 from models import CreateTeamRequest, GetTeamResponse
+from usernames import generate_username
+from passwords import generate_password
 import jwt
 import os
 
@@ -22,6 +24,8 @@ uri = current_app.uri
 db_name = current_app.config['DB_NAME']
 db_teams_collection = current_app.config['DB_TEAMS_COLLECTION']
 db_students_collection = current_app.config['DB_STUDENT_INFO_COLLECTION']
+db_student_accounts_collection: str = current_app.config['DB_STUDENT_ACCOUNTS_COLLECTION']
+db_team_accounts_collection: str = current_app.config["DB_TEAM_ACCOUNTS_COLLECTION"]
 
 
 @teams_blueprint.route('/teams/create', methods=["POST"])
@@ -34,6 +38,8 @@ def create_competition() -> Tuple[Response, int]:
         db = client[db_name]
         team_collection = db[db_teams_collection]
         student_collection = db[db_students_collection]
+        student_accounts_collection = db[db_student_accounts_collection]
+        team_accounts_collection = db[db_team_accounts_collection]
 
         team_members = create_team_dict.pop("team_members")
 
@@ -59,7 +65,23 @@ def create_competition() -> Tuple[Response, int]:
 
         # Create students in student database collection
         team_id = response.inserted_id
+        team_name = create_team_dict["name"]
+        team_username = generate_username(team_name)
+        team_password = generate_password()
+
+        team_account = {
+                "team_id": ObjectId(team_id),
+                "team_username": team_username,
+                "team_password": team_password,
+        }
+
+        team_account_response = team_accounts_collection.insert_one(team_account)
+
+        if team_account_response.inserted_id is None:
+            return jsonify({"error": "Error creating team account."}), status.INTERNAL_SERVER_ERROR
+
         for student in team_members:
+
             student = {
                 "team_id": team_id,
                 "student_account_id": "test student account id",
@@ -75,6 +97,26 @@ def create_competition() -> Tuple[Response, int]:
 
             if student_response.inserted_id is None:
                 return jsonify({"error": "Error adding student to collection"}), status.INTERNAL_SERVER_ERROR
+
+            student_competition_username: str = generate_username(student["first_name"], student["last_name"])
+            student_competition_password: str = generate_password()
+            student_practice_username: str =  generate_username(student["first_name"], student["last_name"])
+            student_practice_password: str = generate_password()
+            
+            student_account = {
+                "competition_username": student_competition_username,
+                "competition_password": student_competition_password,
+                "practice_username": student_practice_username,
+                "practice_password": student_practice_password,
+                "student_info_id": ObjectId(student_response.inserted_id)
+            }
+
+
+            student_accounts_response = student_accounts_collection.insert_one(student_account)
+
+            if student_accounts_response.inserted_id is None:
+                return jsonify({"error": "Error creating student account."}), status.INTERNAL_SERVER_ERROR
+
 
 
         return jsonify({"content": "Created team Successfully!", "team_id": str(team_id)}), status.CREATED
