@@ -67,6 +67,7 @@ def create_competition() -> Tuple[Response, int]:
                 "last_name": student["last_name"],
                 "shirt_size": student["shirt_size"],
                 "email": student["email"] if "email" in student else None,
+                "liability_form_id": None,
                 "is_verified": False,
             }
 
@@ -137,11 +138,9 @@ def get_teams() -> Tuple[Response, int]:
                     "first_name": student["first_name"],
                     "last_name": student["last_name"],
                     "shirt_size": student["shirt_size"],
+                    "liability_form_id": student["liability_form_id"],
                     "is_verified": student["is_verified"],
                 }
-
-                if "liability_form_id" in student:
-                    student_info["liability_form_id"] = str(student["liability_form_id"])
 
                 students_list.append(student_info)
 
@@ -254,6 +253,7 @@ def update_team(team_id) -> Tuple[Response, int]:
                     "first_name": student["first_name"],
                     "last_name": student["last_name"],
                     "email": student["email"] if "email" in student else None,
+                    "liability_form_id": None,
                     "shirt_size": student["shirt_size"],
                     "is_verified": False,
                 }
