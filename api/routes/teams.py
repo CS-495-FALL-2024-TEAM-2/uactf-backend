@@ -1,6 +1,6 @@
 import token
 from urllib import response
-from flask import Blueprint, jsonify, Response, request, current_app
+from flask import Blueprint, jsonify, Response, request, current_app, url_for
 from typing import Dict, Optional, Tuple
 import http_status_codes as status
 from pymongo.errors import WriteError, OperationFailure
@@ -174,13 +174,16 @@ def get_teams() -> Tuple[Response, int]:
 
             students_list = []
             for student in students:
+                signed_liability_release_form = None
+                if "liability_form_id" in student and student["liability_form_id"] != None:
+                    signed_liability_release_form = url_for('files.download_file', file_id=student["liability_form_id"], _external=True)
                 student_info = {
                     "id": str(student["_id"]),
                     "student_account_id": student["student_account_id"],
                     "first_name": student["first_name"],
                     "last_name": student["last_name"],
                     "shirt_size": student["shirt_size"],
-                    "liability_form_id": student["liability_form_id"],
+                    "signed_liability_release_form": signed_liability_release_form,
                     "is_verified": student["is_verified"],
                 }
 

@@ -76,6 +76,7 @@ class GetCompetitionResponse(BaseModel):
     competition_name: str
     registration_deadline: datetime
     is_active: bool
+    liability_release_form: str
 
 class EmailRequest(BaseModel):
     email_account: str
@@ -114,14 +115,15 @@ class TeacherInfo(BaseModel):
     contact_number: str
     shirt_size: str
 
-class StudentInfo(BaseModel):
+
+class StudentInfoResponse(BaseModel):
     id: str
     student_account_id: str
     first_name: str
     last_name: str
     email: Optional[str] = None
     shirt_size: str
-    liability_form_id: Optional[str] = None
+    signed_liability_release_form: Optional[str] = None
     is_verified: bool
 
 class GetAllTeachersResponse(BaseModel):
@@ -134,7 +136,7 @@ class GetTeamResponse(BaseModel):
     name: str
     division: List[int]
     is_virtual: bool
-    students: List[StudentInfo]
+    students: List[StudentInfoResponse]
 
 class ForgotPasswordRequest(BaseModel):
     email: str
@@ -142,3 +144,4 @@ class ForgotPasswordRequest(BaseModel):
 class CreateTeamsReportRequest(BaseModel):
     is_virtual: bool
     email: Optional[str] = None
+
