@@ -145,3 +145,7 @@ class CreateTeamsReportRequest(BaseModel):
     is_virtual: bool
     email: Optional[str] = None
 
+class CreateStudentAccountsReportRequest(BaseModel):
+    email: Optional[str] = None
+    is_verified: Optional[bool] = True
+
