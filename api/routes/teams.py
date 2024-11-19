@@ -26,7 +26,7 @@ db_teams_collection = current_app.config['DB_TEAMS_COLLECTION']
 db_students_collection = current_app.config['DB_STUDENT_INFO_COLLECTION']
 db_student_accounts_collection: str = current_app.config['DB_STUDENT_ACCOUNTS_COLLECTION']
 db_team_accounts_collection: str = current_app.config["DB_TEAM_ACCOUNTS_COLLECTION"]
-
+db_competitions_collection = current_app.config['DB_COMPETITION_COLLECTION']
 
 @teams_blueprint.route('/teams/create', methods=["POST"])
 def create_competition() -> Tuple[Response, int]:
@@ -40,6 +40,7 @@ def create_competition() -> Tuple[Response, int]:
         student_collection = db[db_students_collection]
         student_accounts_collection = db[db_student_accounts_collection]
         team_accounts_collection = db[db_team_accounts_collection]
+        competition_collection = db[db_competitions_collection]
 
         team_members = create_team_dict.pop("team_members")
 
@@ -54,9 +55,15 @@ def create_competition() -> Tuple[Response, int]:
 
             create_team_dict["teacher_id"] = decoded_token["userId"]
 
-        # TODO: Get current active competition id from the token and add it to the team
-        create_team_dict["competition_id"] = "test_competition_id"
-
+        active_valid_competition_query = {
+                "is_active": True,
+                "registration_deadline": {"$gt": datetime.utcnow()}
+            }
+        
+        find_valid_competition = competition_collection.find_one(active_valid_competition_query)
+        if not find_valid_competition:
+            return jsonify({"error": "Could not find active competition with valid registration deadline."}), status.INTERNAL_SERVER_ERROR
+        create_team_dict["competition_id"] = ObjectId(find_valid_competition.get("_id"))
         # Create team in team database collection
         response = team_collection.insert_one(create_team_dict)
 
