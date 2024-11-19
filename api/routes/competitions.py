@@ -37,6 +37,17 @@ def create_competition() -> Tuple[Response, int]:
             return jsonify({"error": "Cannot create competition without liability release form"}), status.BAD_REQUEST
 
         create_competition_dict['liability_release_form_file_id'] = liability_release_form_file_id
+        registration_deadline: datetime =  create_competition_dict["registration_deadline"]
+        if registration_deadline <= datetime.now():
+            return jsonify({"error": "Registration deadline should be in the future."}), status.BAD_REQUEST
+
+        if create_competition_dict["is_active"] == True:
+            find_active_competitions = collection.find_one({"is_active":True})
+            if find_active_competitions:
+                update_competitions_to_inactive_attempt = collection.update_many({"is_active": True}, {"$set": {"is_active": False}})
+                if update_competitions_to_inactive_attempt.modified_count < 1:
+                    logging.error("Cant update all existing active competitions to inactive in MongoDB.")
+                    return jsonify({"error": "Could not create competition. Check server logs for details."}), status.INTERNAL_SERVER_ERROR
 
         response = collection.insert_one(create_competition_dict)
 
@@ -224,6 +235,18 @@ def update_or_delete_competition(competition_id) -> Tuple[Response, int]:
                     update_competition_data['liability_release_form_file_id'] = liability_release_form_file_id
                 else:
                     return jsonify({"error": "Cannot have competition without liability release form"}), status.BAD_REQUEST
+
+            registration_deadline: datetime =  update_competition_data["registration_deadline"]
+            if registration_deadline <= datetime.now():
+                return jsonify({"error": "Registration deadline should be in the future."}), status.BAD_REQUEST
+
+            if update_competition_data["is_active"] == True:
+                find_active_competitions = collection.find_one({"is_active":True})
+                if find_active_competitions["_id"] != None:
+                    update_competitions_to_inactive_attempt = collection.update_many({"is_active": True}, {"$set": {"is_active": False}})
+                    if update_competitions_to_inactive_attempt.modified_count < 1:
+                        logging.error("Cant update all existing active competitions to inactive in MongoDB.")
+                        return jsonify({"error": "Could not create competition. Check server logs for details."}), status.INTERNAL_SERVER_ERROR
 
 
             update_attempt = collection.update_one(
