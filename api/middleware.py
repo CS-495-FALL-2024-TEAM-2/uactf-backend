@@ -35,7 +35,10 @@ protected_paths = {
     "/teams/get": ["admin", "teacher"],
     "/teachers/get/all": ["admin"],
     "/teams/<string:team_id>": ["admin", "teacher"],
-    "/reports/teams/info/create": ["admin"]
+    "/reports/teams/info/create": ["admin"],
+    "/teachers/upload-signed-liability-release-form": ["teacher"],
+    "/admin/get-students-to-be-verified": ["admin"],
+    "/admin/verify-student/<string:student_id>": ["admin"]
 }
 
 def path_matches(pattern, path):

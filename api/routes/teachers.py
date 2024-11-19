@@ -1,5 +1,8 @@
-from flask import Blueprint, jsonify, Response, request, current_app
+import os
+from flask import Blueprint, jsonify, Response, request, current_app, url_for
 from typing import Dict, Optional, Tuple
+
+import jwt
 import http_status_codes as status
 from pymongo.errors import WriteError, OperationFailure
 from datetime import date, datetime
@@ -7,9 +10,11 @@ from pydantic import ValidationError
 from bson.objectid import ObjectId
 import logging
 import gridfs
-from models import GetAllTeachersResponse, TeacherInfo, UploadSignedLiabilityReleaseFormRequest
+from models import GetAllTeachersResponse, TeacherInfo
 
 teachers_blueprint = Blueprint("teachers", __name__)
+secret_key = os.getenv("SECRET_KEY")
+auth_algorithm = os.getenv("AUTH_ALGORITHM")
 
 client = current_app.client
 uri = current_app.uri
@@ -69,22 +74,30 @@ def upload_signed_liability_release_form() -> Tuple[Response, int]:
 
 
         # check that liability form exists
-        if 'signed_liablity_release_form' not in request.files:
+        if 'signed_liability_release_form' not in request.files:
             return jsonify({"error": "No signed liability release form attached!"}), status.BAD_REQUEST
+        # check that student id is in request
+        student_id = request.form.get('student_id')
+        if student_id == None:
+            return jsonify({"error": "No student id present"}), status.BAD_REQUEST
+
+        # get teacher id
+        token = request.cookies.get("access_token")
+        decoded_token = jwt.decode(token, secret_key, algorithms=[auth_algorithm]) if token else None
+
+        if not decoded_token:
+            return jsonify({'error': "Unauthorized "}), status.UNAUTHORIZED
+        teacher_id = decoded_token["userId"]
         
-        # validation
-        upload_signed_liability_release_form_request: UploadSignedLiabilityReleaseFormRequest = UploadSignedLiabilityReleaseFormRequest.model_validate_json(request.form.get('payload'))
-        # upload_signed_liability_release_form_dict: Dict = upload_signed_liability_release_form_request.model_dump()
 
-
-        student = student_collection.find_one({"_id": ObjectId(upload_signed_liability_release_form_request.student_id)})
+        student = student_collection.find_one({"_id": ObjectId(student_id)})
         if student is None:
             return jsonify({"error":"Could not find student with that id"}), status.BAD_REQUEST
         
         team = team_collection.find_one({"_id": ObjectId(student["team_id"])})
 
         # check if teacher is the teacher for the team the student belongs to
-        if team["teacher_id"] != upload_signed_liability_release_form_request.teacher_id:
+        if team["teacher_id"] != teacher_id:
             return jsonify({"error":"Invalid request"}), status.BAD_REQUEST
 
         if "liability_form_id" in student and student["liability_form_id"] != None:
@@ -92,7 +105,7 @@ def upload_signed_liability_release_form() -> Tuple[Response, int]:
             fs.delete(student["liability_form_id"])
 
         # upload new signed form
-        file = request.files['signed_liablity_release_form']
+        file = request.files['signed_liability_release_form']
         new_liability_form_id = fs.put(file, filename=file.filename)
 
         update_data = {

@@ -24,7 +24,8 @@ def get_students_to_be_verified() -> Tuple[Response, int]:
         student_collection = db[db_students_collection]
         students = []
 
-        for document in student_collection.find({"is_verified": False, "liability_form_id": {"$exists": True}}):
+        for document in student_collection.find({"is_verified": False, "liability_form_id": {"$exists": True, "$ne": None }}):
+            print(document)
             student = {
                 "id": str(document["_id"]),
                 "student_account_id": str(document["student_account_id"]),

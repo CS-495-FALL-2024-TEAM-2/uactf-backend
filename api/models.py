@@ -145,6 +145,3 @@ class CreateTeamsReportRequest(BaseModel):
     is_virtual: bool
     email: Optional[str] = None
 
-class UploadSignedLiabilityReleaseFormRequest(BaseModel):
-    student_id: str
-    teacher_id: str
