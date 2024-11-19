@@ -22,7 +22,7 @@ public_paths = [
 ]
 
 protected_paths = {
-    "/auth/logout": ["admin", "crimson_defense, teacher"],
+    "/auth/logout": ["admin", "crimson_defense", "teacher"],
     "/accounts/admin/create": ["admin"],
     "/challenges/create": ["crimson_defense", "admin"],
     "/competitions/create": ["admin"],
